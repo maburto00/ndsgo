@@ -1,0 +1,5 @@
+WINDOWS
+
+conda update conda
+conda create -n tensorenv2 python=2.7 anaconda
+conda env remove -n tensorenv2
