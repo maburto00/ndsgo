@@ -1,7 +1,11 @@
-# import numpy as np
-import random
-from boards import Board
+import numpy as np
+import utils
+# from board import Board
+from gomill.boards import Board
 
+
+#TODO: create class MCPlayer
+#TODO: (in the long term) create our own Board and GTP implementations
 
 # def board2int(board_array):
 #     state=0
@@ -29,12 +33,9 @@ class Player:
     def __init__(self, board, color='b'):
         self.board = board
         self.color = color
-        # v = np.zeros(tuple([3 for i in range(n*n)]))
-        # q = np.zeros(tuple([3 for i in range(n * n)])+(16,))
-        # TODO: try, intead of using a ndarray of rank 16, use a matrix of shape (43046721,16)
-        # and the first number should be converted from base-10 to base-3 to intepredte the state.
+        self.ko = None
 
-    def make_move(self):
+    def genmove(self):
         pass
 
     def update_board(self, x, y, color):
@@ -50,38 +51,42 @@ class Player:
         pass
 
 
-class RandomPlayer(Player):
-    def make_move(self):
-        available_pos = self.board.get_available_pos()
-        len_a = len(available_pos)
-        r = random.randint(0, len_a)
-        if r == len_a:
-            return None
-        else:
-            return available_pos[r]
+# class RandomPlayer(Player):
+#     def genmove(self):
+#         available_pos = self.board.get_available_pos()
+#         len_a = len(available_pos)
+#         r = random.randint(0, len_a)
+#         if r == len_a:
+#             return None
+#         else:
+#             return available_pos[r]
+#
+# class FixedPlayer(Player):
+#
+#     def __init__(self, board, color='b'):
+#         Player.__init__(self, board, color)
+#         fixed_moves = [()]
+#         move_num = 0
+#
+#     def genmove(self):
+#         return (0,0)
+#
 
 
-# class PlayerMC(Player):
-#     def _get_state(board):
-#         state=0
-#         state=
-#
-#     def make_move(self):
-#         state=_get_state(board)
-#
-#     pass
-#
-# class PlayerTD(Player):
-#     pass
+class PlayerTD(Player):
+    pass
 
 class HumanPlayer(Player):
-    def make_move(self):
+    def genmove(self):
         """
-            the user inputs a tuple with the coordinates for the move
+        the user inputs a tuple with the coordinates for the move
         :return: a tuple with the move, or None for pass
         """
         # move_t = input("Enter move (e.g: 0,0 or None for passing): ")
+        #TODO: do in while in order to catch exceptions and manage ko
+
         mov = raw_input("Enter move (e.g: 0,0 or '' for passing):")
+
         if mov == '':
             return None
         return tuple([int(x) for x in mov.split(',')])
@@ -89,16 +94,16 @@ class HumanPlayer(Player):
         # def update_board(p1,p2,mov):
         #   human_player.board.play(mov)
 
-
 def main_human():
     board = Board(4)
     p1 = HumanPlayer(board.copy(), 'b')
-    mov = p1.make_move()
+    mov = p1.genmove()
     print(mov)
 
 
 def main():
     """test for player"""
+    print('main')
     board = Board(4)
     # p1 = RandomPlayer(board.copy(), 'w')
     # p2 = RandomPlayer(board.copy(), 'b')
@@ -121,5 +126,5 @@ def main():
 
 
 if __name__ == '__main__':
-    # main()
-    main_human()
+    main()
+
