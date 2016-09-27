@@ -1,7 +1,7 @@
 #from board import Board
 from gomill.boards import Board
 from player import HumanPlayer
-from mc_player import MCPlayer
+from lookup_players import MCPlayerQ
 
 class Match:
     def __init__(self, board, p1, p2,verbose=False):
@@ -32,7 +32,7 @@ class Match:
             i += 1
             self.steps += 1
             current_player = players[i % 2]
-            mov = current_player.genmove()
+            mov = current_player.genmove
             color = current_player.color
             if mov is not None:
                 self.update_boards(mov, color)
@@ -71,7 +71,7 @@ def test_mcplayer_vs_humanplayer():
     :return:
     """
     board=Board(2)
-    p1 =MCPlayer(board.copy(),'b')
+    p1 =MCPlayerQ(board.copy(), 'b')
     p2 = HumanPlayer(board.copy(), 'w')
     match= Match(board.copy(),p1,p2)
     match.play_match()
@@ -83,28 +83,44 @@ def test_human_vs_human():
 
 def test_mc_vs_mc():
     board = Board(2)
-    p1 = MCPlayer(board.copy(), 'b')
-    p2 = MCPlayer(board.copy(), 'w')
-    match = Match(board.copy(), p1, p2)
+    seed=4
+    verbose=True
+    p1 = MCPlayerQ(board.copy(), 'b', seed=seed, verbose=verbose)
+    p2 = MCPlayerQ(board.copy(), 'w', seed=seed, verbose=verbose)
+
+    p1.new_game(board.copy(), 'b')
+    p2.new_game(board.copy(), 'w')
+
+    match = Match(board.copy(), p1, p2, verbose=verbose)
     match.play_match()
-    print("N")
-    print(match.p1.N)
-    print("Q")
-    print(match.p1.Q)
-    match.p1.update_Q(1)
-    print("after Q")
-    print(match.p1.Q)
+
+    p1.new_game(board.copy(), 'b')
+    p2.new_game(board.copy(), 'w')
+
+    match = Match(board.copy(), p1, p2, verbose=verbose)
+    match.play_match()
+
     pass
 
-    board = Board(2)
-    p1 = MCPlayer(board.copy(), 'b')
-    p2 = MCPlayer(board.copy(), 'w')
-    match = Match(board.copy(), p1, p2)
-    match.play_match()
+    #print("N")
+    #print(match.p1.N)
+    #print("Q")
+    #print(match.p1.Q)
+    #match.p1.update_Q(1)
+    #print("after Q")
+    #print(match.p1.Q)
+    print ("steps:{}".format(match.steps))
+    pass
+
+    #board = Board(2)
+    #p1 = MCPlayer(board.copy(), 'b')
+    #p2 = MCPlayer(board.copy(), 'w')
+    #match = Match(board.copy(), p1, p2)
+    #match.play_match()
 
 
 
-def multiple_match():
+#def multiple_match():
 
 
 if __name__ == '__main__':

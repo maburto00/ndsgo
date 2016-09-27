@@ -35,6 +35,11 @@ class Player:
         self.color = color
         self.ko = None
 
+    def new_game(self,board,color='b'):
+        self.board=board
+        self.color=color
+        self.ko = None
+
     def genmove(self):
         pass
 

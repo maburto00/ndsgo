@@ -1,7 +1,7 @@
 """Go board representation."""
 
 from gomill.common import *
-
+#from gomill import ascii_boards
 
 class _Group(object):
     """Represent a solidly-connected group.
@@ -57,6 +57,11 @@ class Board(object):
         b._is_empty = self._is_empty
         return b
 
+    # def is_legal(self,row,col,colour):
+    #     if self.board.board[row][col] is None:
+    #         return True
+    #     elif self.board.is
+
     def _make_group(self, row, col, colour):
         points = set()
         is_surrounded = True
@@ -108,9 +113,7 @@ class Board(object):
 
     def _find_surrounded_groups(self):
         """Find solidly-connected groups with 0 liberties.
-
         Returns a list of _Groups.
-
         """
         surrounded = []
         handled = set()
@@ -150,6 +153,7 @@ class Board(object):
         Returns the point forbidden by simple ko, or None
 
         """
+        # TODO: suicide should be illegal
         if self.board[row][col] is not None:
             raise ValueError
         self.board[row][col] = colour
@@ -159,6 +163,7 @@ class Board(object):
         if surrounded:
             if len(surrounded) == 1:
                 to_capture = surrounded
+                #in this case, we have an empty board
                 if len(to_capture[0].points) == self.side*self.side:
                     self._is_empty = True
             else:
@@ -248,3 +253,146 @@ class Board(object):
             handled.update(region.points)
         return scores['b'] - scores['w']
 
+    def __str__(self):
+        """
+            'X' for black, 'O' for white and '.' for empty space
+        """
+        result = ''
+        for i in range(self.side):
+            for j in range(self.side):
+                if self.board[i][j] is None:
+                    result += '.'
+                elif self.board[i][j] == 'b':
+                    result += 'X'
+                elif self.board[i][j] == 'w':
+                    result += 'O'
+            result += '\n'
+        return result
+
+def test1():
+    """"
+    OK
+    .....    .....
+    ..X..    ..X..
+    ..OX. => .X.X.
+    ..X..    ..X..
+    .....    .....
+
+    """
+    board = Board(5)
+    board.play(1, 2, 'b')
+    board.play(2, 3, 'b')
+    board.play(3, 2, 'b')
+    board.play(2, 2, 'w')
+    print(board)
+    board.play(2, 1, 'b')
+    print(board)
+
+def test_ko():
+    """"
+    OK: it allows returns when there is a ko...
+    .....    .....
+    .OX..    .OX..
+    O.OX. => OX.X.
+    .OX..    .OX..
+    .....    .....
+    """
+    board = Board(5)
+    ko =board.play(2, 1, 'b')
+    ko =board.play(2, 3, 'b')
+    ko =board.play(3, 2, 'b')
+    ko =board.play(0, 2, 'w')
+    ko =board.play(1, 1, 'w')
+    ko =board.play(1, 3, 'w')
+    ko =board.play(2, 2, 'w')
+    print(board)
+    ko =board.play(1, 2, 'b')
+    print(board)
+    ko =board.play(2, 2, 'w')
+    print(board)
+    ko=board.play(1, 2, 'b')
+    print(board)
+    ko=board.play(2, 2, 'w')
+    ko = board.play(4,4, 'w')
+    print(board)
+    print(board.area_score())
+
+def test_suicide():
+    """"
+    OK: it allows suicide but it's the same as passing
+    .....    .....
+    ..X..    ..X..
+    .X X. => .XOX.
+    ..X..    ..X..
+    .....    .....
+
+    """
+    board = Board(5)
+    board.play(1, 2, 'b')
+    board.play(2, 3, 'b')
+    board.play(3, 2, 'b')
+    board.play(2, 1, 'b')
+    print(board)
+    board.play(2, 2, 'w')
+    print(board)
+
+def test4():
+    """"
+    WRONG: it allows suicide.
+    XXXXX    XXXXX    .....
+    XXXXX    XXXXX    .....
+    XXXXX => XXXXX => .....
+    XXXXX    XXXXX    .....
+    XXXX.    XXXXX    .....
+    """
+    board = Board(5)
+    for (row,col) in board.board_points:
+        if(row!=board.side-1 or col!=board.side-1):
+            board.play(row,col,'b')
+    print(board)
+    board.play(4,4,'b')
+    print(board)
+
+def test_score():
+    """
+    For a 2x2 board
+            X.  XX  XX  ..  XO  X.  X.
+            ..  ..  X.  ..  ..  .O  O.
+    Score:  4   4   4   0   0   0
+
+    :return:
+    """
+    board=Board(2)
+
+    for (r,c) in board.board_points:
+        board.play(r,c,'b')
+        print('Score: {}'.format(board.area_score()))
+        print(board)
+
+    board=Board(2)
+    board.play(0,0,'b')
+    board.play(0, 1, 'w')
+    print('Score: {}'.format(board.area_score()))
+    print(board)
+
+    board = Board(2)
+    board.play(0, 0, 'b')
+    board.play(1, 0, 'w')
+    print('Score: {}'.format(board.area_score()))
+    print(board)
+
+    board = Board(2)
+    board.play(0, 0, 'b')
+    board.play(1, 1, 'w')
+    print('Score: {}'.format(board.area_score()))
+    print(board)
+
+    board = Board(2)
+    board.play(0, 0, 'b')
+    board.play(1, 1, 'w')
+    board.play(1, 0, 'w')
+    print('Score: {}'.format(board.area_score()))
+    print(board)
+
+if __name__=='__main__':
+    test_score()

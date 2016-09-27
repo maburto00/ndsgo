@@ -5,7 +5,10 @@
 # IMPORTANT NOTE: DON'T USE YET. WE ARE USING THE GOMILL IMPLEMENTATION FOR THE MOMENT.
 #
 # """
-#
+# TODO: test for scoring 2x2 board in these possitions (compare with glGo for example
+# TODO: ..    X.    O.    O.
+# TODO: ..    .X    .O    OO  etc...
+
 #
 # def UP(pos):
 #     return (pos[0]+1,pos[1])

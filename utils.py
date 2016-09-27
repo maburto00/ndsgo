@@ -1,4 +1,9 @@
-
+class Color:
+    """
+    Use for indices in lists for Board and for Q tables
+    """
+    EMPTY, BLACK, WHITE, BORDER = range(4)
+    Empty, Black, White, Border = range(4)
 
 def xy_to_z(x,y,n):
     """
@@ -18,8 +23,8 @@ def z_to_xy(z,n):
 
 def letter2int(c):
     if c is None:
-        return 0
+        return Color.EMPTY
     elif c == 'b':
-        return 1
+        return Color.BLACK
     elif c == 'w':
-        return 2
+        return Color.WHITE
