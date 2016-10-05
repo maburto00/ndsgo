@@ -12,10 +12,11 @@ class Match:
         self.steps=0
 
     def update_boards(self, mov, color):
+        print(mov)
         (x, y) = mov
         try:
             self.board.play(x, y, color)
-            if (self.p1.color==color): # p1 already played the move
+            if (self.p1.color == color): # p1 already played the move
                 self.p2.board.play(x, y, color)
             else:
                 self.p1.board.play(x, y, color)
@@ -32,8 +33,9 @@ class Match:
             i += 1
             self.steps += 1
             current_player = players[i % 2]
-            mov = current_player.genmove
             color = current_player.color
+            mov = current_player.genmove(color)
+
             if mov is not None:
                 self.update_boards(mov, color)
                 num_pass = 0
@@ -47,14 +49,14 @@ class Match:
         print('end of match')
         print('Score: {}'.format(self.board.area_score()))
 
-    def mc_selfplay_update(self):
-        score=self.board.area_score()
-        if(self.p1.color=='b'):
-            self.p1.update_Q(int(score > 0))
-            self.p2.update_Q(int(score < 0))
-        else:
-            self.p2.update_Q(int(score > 0))
-            self.p1.update_Q(int(score < 0))
+    # def mc_selfplay_update(self):
+    #     score=self.board.area_score()
+    #     if(self.p1.color=='b'):
+    #         self.p1.update_Q(int(score > 0))
+    #         self.p2.update_Q(int(score < 0))
+    #     else:
+    #         self.p2.update_Q(int(score > 0))
+    #         self.p1.update_Q(int(score < 0))
 
 
 # def main():
@@ -71,9 +73,10 @@ def test_mcplayer_vs_humanplayer():
     :return:
     """
     board=Board(2)
-    p1 =MCPlayerQ(board.copy(), 'b')
+    p1 = MCPlayerQ(board.copy(), 'b',epsilon=0)
+    p1.load_Q('Q_n2_N100.npy')
     p2 = HumanPlayer(board.copy(), 'w')
-    match= Match(board.copy(),p1,p2)
+    match= Match(board.copy(),p1,p2,verbose=True)
     match.play_match()
 
 def test_human_vs_human():
@@ -124,4 +127,5 @@ def test_mc_vs_mc():
 
 
 if __name__ == '__main__':
-    test_mc_vs_mc()
+    # test_mc_vs_mc()
+    test_mcplayer_vs_humanplayer()

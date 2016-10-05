@@ -2,14 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c71cf186-1dff-4fa9-86bf-ebabc62bad60" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/mc_player.py" afterPath="" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/tests/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/tests/test_MCPlayerQ.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/ndsgo.iml" afterPath="$PROJECT_DIR$/.idea/ndsgo.iml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.ipynb_checkpoints/nds4x4-checkpoint.ipynb" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/nds4x4-checkpoint.ipynb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/board.py" afterPath="$PROJECT_DIR$/board.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gomill/boards.py" afterPath="$PROJECT_DIR$/gomill/boards.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lookup_players.py" afterPath="$PROJECT_DIR$/lookup_players.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/match.py" afterPath="$PROJECT_DIR$/match.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/player.py" afterPath="$PROJECT_DIR$/player.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/utils.py" afterPath="$PROJECT_DIR$/utils.py" />
     </list>
     <ignored path="ndsgo.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -32,6 +32,26 @@
       <file leaf-file-name="python_configuration.txt" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/doc/python_configuration.txt">
           <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="85">
+              <caret line="5" column="0" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="lookup_players.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/lookup_players.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="187">
+              <caret line="73" column="35" selection-start-line="73" selection-start-column="35" selection-end-line="73" selection-end-column="35" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="__init__.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/tests/__init__.py">
+          <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="0">
               <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
               <folding />
@@ -39,11 +59,34 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="nds4x4-checkpoint.ipynb" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/.ipynb_checkpoints/nds4x4-checkpoint.ipynb">
-          <provider selected="true" editor-type-id="ipnb-editor">
-            <state>
-              <selected id="2" />
+      <file leaf-file-name="test_MCPlayerQ.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/tests/test_MCPlayerQ.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="119">
+              <caret line="7" column="12" selection-start-line="7" selection-start-column="12" selection-end-line="7" selection-end-column="12" />
+              <folding>
+                <element signature="e#0#29#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name=".gitignore" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/.gitignore">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="51">
+              <caret line="3" column="5" selection-start-line="3" selection-start-column="5" selection-end-line="3" selection-end-column="5" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="boards.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gomill/boards.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="238">
+              <caret line="47" column="16" selection-start-line="47" selection-start-column="16" selection-end-line="47" selection-end-column="16" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -51,11 +94,21 @@
       <file leaf-file-name="match.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/match.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+            <state relative-caret-position="17">
+              <caret line="1" column="0" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
               <folding>
-                <marker date="1473821502926" expanded="true" signature="3311:3314" ph="..." />
+                <element signature="e#25#56#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="gtp_engine.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gomill/gtp_engine.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="238">
+              <caret line="21" column="35" selection-start-line="21" selection-start-column="35" selection-end-line="21" selection-end-column="35" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -63,34 +116,21 @@
       <file leaf-file-name="player.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/player.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="17">
-              <caret line="10" column="0" selection-start-line="10" selection-start-column="0" selection-end-line="10" selection-end-column="0" />
-              <folding>
-                <marker date="1473821502947" expanded="false" signature="0:89" ph="import ..." />
-                <marker date="1473821502947" expanded="true" signature="92:650" ph="..." />
-                <marker date="1473821502947" expanded="true" signature="665:1341" ph="..." />
-                <marker date="1473821502947" expanded="true" signature="670:801" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-                <marker date="1473821502947" expanded="true" signature="844:921" ph="..." />
-                <marker date="1473821502947" expanded="true" signature="1059:1072" ph="..." />
-                <marker date="1473821502947" expanded="true" signature="1114:1267" ph="..." />
-                <marker date="1473821502947" expanded="true" signature="1292:1305" ph="..." />
-                <marker date="1473821502947" expanded="true" signature="1328:1341" ph="..." />
-                <marker date="1473821502947" expanded="true" signature="1344:1863" ph="..." />
-                <marker date="1473821502947" expanded="true" signature="1889:1898" ph="..." />
-                <marker date="1473821502947" expanded="true" signature="1926:2490" ph="..." />
-                <marker date="1473821502947" expanded="true" signature="1949:2490" ph="..." />
-                <marker date="1473821502947" expanded="true" signature="1958:2096" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-                <marker date="1473821502947" expanded="true" signature="2105:2238" ph="..." />
-                <marker date="1473821502947" expanded="true" signature="2419:2490" ph="..." />
-                <marker date="1473821502947" expanded="true" signature="2509:2608" ph="..." />
-                <marker date="1473821502947" expanded="true" signature="2622:3158" ph="..." />
-                <marker date="1473821502947" expanded="true" signature="2825:3158" ph="..." />
-              </folding>
+            <state relative-caret-position="1377">
+              <caret line="84" column="28" selection-start-line="84" selection-start-column="28" selection-end-line="84" selection-end-column="28" />
+              <folding />
             </state>
           </provider>
         </entry>
       </file>
     </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -99,6 +139,12 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/.ipynb_checkpoints/nds4x4-checkpoint.ipynb" />
+        <option value="$PROJECT_DIR$/player.py" />
+        <option value="$PROJECT_DIR$/tests/context.py" />
+        <option value="$PROJECT_DIR$/tests/prueba.py" />
+        <option value="$PROJECT_DIR$/tests/test_MCPlayerQ.py" />
+        <option value="$PROJECT_DIR$/match.py" />
+        <option value="$PROJECT_DIR$/lookup_players.py" />
       </list>
     </option>
   </component>
@@ -151,21 +197,88 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ndsgo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ndsgo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tests" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
       <pane id="Scratches" />
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../gomill-0.7.4" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="settings.editor.splitter.proportion" value="0.2" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\Mario\Dropbox\PycharmProjects" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python.match">
+    <configuration default="false" name="prueba" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="C:\Users\Mario\Anaconda3\envs\tensorenv2\python.exe" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="ndsgo" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tests/prueba.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <method />
+    </configuration>
+    <configuration default="false" name="lookup_players" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="C:\Users\Mario\Anaconda3\envs\tensorenv2\python.exe" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="ndsgo" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/lookup_players.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <method />
+    </configuration>
+    <configuration default="false" name="match" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="C:\Users\Mario\Anaconda3\envs\tensorenv2\python.exe" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="ndsgo" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/match.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <method />
+    </configuration>
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -300,6 +413,41 @@
       <option name="USE_KEYWORD" value="false" />
       <method />
     </configuration>
+    <configuration default="false" name="test_MCPlayerQ" type="tests" factoryName="Unittests">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="C:\Users\Mario\Anaconda3\envs\tensorenv2\python.exe" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="ndsgo" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tests/test_MCPlayerQ.py" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <option name="PUREUNITTEST" value="true" />
+      <option name="PARAMS" value="" />
+      <option name="USE_PARAM" value="false" />
+      <method />
+    </configuration>
+    <list size="4">
+      <item index="0" class="java.lang.String" itemvalue="Python tests.test_MCPlayerQ" />
+      <item index="1" class="java.lang.String" itemvalue="Python.prueba" />
+      <item index="2" class="java.lang.String" itemvalue="Python.lookup_players" />
+      <item index="3" class="java.lang.String" itemvalue="Python.match" />
+    </list>
+    <recent_temporary>
+      <list size="3">
+        <item index="0" class="java.lang.String" itemvalue="Python.match" />
+        <item index="1" class="java.lang.String" itemvalue="Python.lookup_players" />
+        <item index="2" class="java.lang.String" itemvalue="Python.prueba" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="ShelveChangesManager" show_recycled="false">
     <option name="remove_strategy" value="false" />
@@ -325,27 +473,59 @@
     <option name="localTasksCounter" value="2" />
     <servers />
   </component>
+  <component name="TestHistory">
+    <history-entry file="test_MCPlayerQ - 2016.10.02 at 23h 03m 43s.xml">
+      <configuration name="test_MCPlayerQ" configurationId="tests" />
+    </history-entry>
+    <history-entry file="test_MCPlayerQ - 2016.10.02 at 23h 05m 32s.xml">
+      <configuration name="test_MCPlayerQ" configurationId="tests" />
+    </history-entry>
+    <history-entry file="test_MCPlayerQ - 2016.10.02 at 23h 05m 56s.xml">
+      <configuration name="test_MCPlayerQ" configurationId="tests" />
+    </history-entry>
+    <history-entry file="test_MCPlayerQ - 2016.10.02 at 23h 28m 06s.xml">
+      <configuration name="test_MCPlayerQ" configurationId="tests" />
+    </history-entry>
+    <history-entry file="test_MCPlayerQ - 2016.10.02 at 23h 45m 37s.xml">
+      <configuration name="test_MCPlayerQ" configurationId="tests" />
+    </history-entry>
+    <history-entry file="test_MCPlayerQ - 2016.10.02 at 23h 51m 30s.xml">
+      <configuration name="test_MCPlayerQ" configurationId="tests" />
+    </history-entry>
+    <history-entry file="test_MCPlayerQ - 2016.10.02 at 23h 51m 34s.xml">
+      <configuration name="test_MCPlayerQ" configurationId="tests" />
+    </history-entry>
+    <history-entry file="test_MCPlayerQ - 2016.10.02 at 23h 58m 29s.xml">
+      <configuration name="test_MCPlayerQ" configurationId="tests" />
+    </history-entry>
+    <history-entry file="test_MCPlayerQ - 2016.10.02 at 23h 58m 43s.xml">
+      <configuration name="test_MCPlayerQ" configurationId="tests" />
+    </history-entry>
+    <history-entry file="test_MCPlayerQ - 2016.10.03 at 00h 39m 16s.xml">
+      <configuration name="test_MCPlayerQ" configurationId="tests" />
+    </history-entry>
+  </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1376" height="744" extended-state="6" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24264705" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18731117" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3533123" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4164038" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="Vcs.Log.UiProperties">
@@ -365,60 +545,24 @@
     <option name="LAST_COMMIT_MESSAGE" value="Initial commit.&#10;&#10; Originally this project was called ndsgo4x4 but since everything can be generalized,&#10; I renamed the project. Still, in this initial phase I will focus on 4x4 using basic RL techniques (the value function will be stored in a table).&#10;&#10;In the next commit I plan to actually implement the value function.&#10;TODO: create MCPlayer.&#10;TODO(next commit): create file gtpplayer and class GtpPlayer." />
   </component>
   <component name="XDebuggerManager">
-    <breakpoint-manager />
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/lookup_players.py</url>
+          <line>257</line>
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
+      </breakpoints>
+      <option name="time" value="6" />
+    </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/doc/python_configuration.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.ipynb_checkpoints/nds4x4-checkpoint.ipynb">
-      <provider selected="true" editor-type-id="ipnb-editor">
-        <state>
-          <selected id="-1" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/match.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <marker date="1473821502926" expanded="true" signature="3311:3314" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/player.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="17">
           <caret line="4" column="0" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
-          <folding>
-            <marker date="1473821502947" expanded="false" signature="0:89" ph="import ..." />
-            <marker date="1473821502947" expanded="true" signature="92:650" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="665:1341" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="670:801" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1473821502947" expanded="true" signature="844:921" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="1059:1072" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="1114:1267" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="1292:1305" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="1328:1341" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="1344:1863" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="1889:1898" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="1926:2490" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="1949:2490" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="1958:2096" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1473821502947" expanded="true" signature="2105:2238" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="2419:2490" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="2509:2608" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="2622:3158" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="2825:3158" ph="..." />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -443,7 +587,7 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <marker date="1473821502926" expanded="true" signature="3311:3314" ph="..." />
+            <element signature="e#25#56#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -452,55 +596,133 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="34">
           <caret line="3" column="0" selection-start-line="3" selection-start-column="0" selection-end-line="3" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/boards.py" />
+    <entry file="file://$PROJECT_DIR$/.ipynb_checkpoints/nds4x4-checkpoint.ipynb">
+      <provider selected="true" editor-type-id="ipnb-editor">
+        <state>
+          <selected id="3" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/doc/python_configuration.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/player.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1377">
+          <caret line="84" column="28" selection-start-line="84" selection-start-column="28" selection-end-line="84" selection-end-column="28" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/match.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1326">
+          <caret line="80" column="0" selection-start-line="80" selection-start-column="0" selection-end-line="80" selection-end-column="0" />
           <folding>
-            <marker date="1473821502947" expanded="false" signature="0:89" ph="import ..." />
-            <marker date="1473821502947" expanded="true" signature="92:650" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="665:1341" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="670:801" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1473821502947" expanded="true" signature="844:921" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="1059:1072" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="1114:1267" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="1292:1305" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="1328:1341" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="1344:1863" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="1889:1898" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="1926:2490" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="1949:2490" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="1958:2096" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1473821502947" expanded="true" signature="2105:2238" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="2419:2490" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="2509:2608" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="2622:3158" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="2825:3158" ph="..." />
+            <element signature="e#25#56#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lookup_players.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="576">
+          <caret line="285" column="3" selection-start-line="285" selection-start-column="3" selection-end-line="289" selection-end-column="90" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/doc/python_configuration.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lookup_players.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/match.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1200">
+          <caret line="80" column="0" selection-start-line="80" selection-start-column="0" selection-end-line="80" selection-end-column="0" />
+          <folding>
+            <element signature="e#25#56#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/player.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="10" column="0" selection-start-line="10" selection-start-column="0" selection-end-line="10" selection-end-column="0" />
+        <state relative-caret-position="1215">
+          <caret line="84" column="28" selection-start-line="84" selection-start-column="28" selection-end-line="84" selection-end-column="28" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/doc/python_configuration.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lookup_players.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/match.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1360">
+          <caret line="80" column="0" selection-start-line="80" selection-start-column="0" selection-end-line="80" selection-end-column="0" />
           <folding>
-            <marker date="1473821502947" expanded="false" signature="0:89" ph="import ..." />
-            <marker date="1473821502947" expanded="true" signature="92:650" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="665:1341" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="670:801" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1473821502947" expanded="true" signature="844:921" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="1059:1072" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="1114:1267" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="1292:1305" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="1328:1341" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="1344:1863" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="1889:1898" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="1926:2490" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="1949:2490" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="1958:2096" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1473821502947" expanded="true" signature="2105:2238" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="2419:2490" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="2509:2608" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="2622:3158" ph="..." />
-            <marker date="1473821502947" expanded="true" signature="2825:3158" ph="..." />
+            <element signature="e#25#56#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/player.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1428">
+          <caret line="84" column="28" selection-start-line="84" selection-start-column="28" selection-end-line="84" selection-end-column="28" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/doc/python_configuration.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lookup_players.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="986">
+          <caret line="58" column="0" selection-start-line="58" selection-start-column="0" selection-end-line="58" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -509,8 +731,82 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <marker date="1473821502926" expanded="true" signature="3311:3314" ph="..." />
+            <element signature="e#25#56#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/player.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="170">
+          <caret line="10" column="0" selection-start-line="10" selection-start-column="0" selection-end-line="10" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/doc/python_configuration.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.ipynb_checkpoints/nds4x4-checkpoint.ipynb">
+      <provider selected="true" editor-type-id="ipnb-editor">
+        <state>
+          <selected id="-1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/match.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#25#56#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/player.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="105">
+          <caret line="10" column="0" selection-start-line="10" selection-start-column="0" selection-end-line="10" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/doc/python_configuration.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.ipynb_checkpoints/nds4x4-checkpoint.ipynb">
+      <provider selected="true" editor-type-id="ipnb-editor">
+        <state>
+          <selected id="-1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/match.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#25#56#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/player.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="17">
+          <caret line="4" column="0" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -526,7 +822,133 @@
     <entry file="file://$PROJECT_DIR$/.ipynb_checkpoints/nds4x4-checkpoint.ipynb">
       <provider selected="true" editor-type-id="ipnb-editor">
         <state>
-          <selected id="2" />
+          <selected id="-1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/match.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#25#56#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/player.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="3" column="0" selection-start-line="3" selection-start-column="0" selection-end-line="3" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/boards.py" />
+    <entry file="file://$PROJECT_DIR$/.ipynb_checkpoints/nds4x4-checkpoint.ipynb">
+      <provider selected="true" editor-type-id="ipnb-editor">
+        <state>
+          <selected id="3" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gtp_player.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="170">
+          <caret line="10" column="12" selection-start-line="10" selection-start-column="12" selection-end-line="10" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gomill/gtp_engine.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="238">
+          <caret line="21" column="35" selection-start-line="21" selection-start-column="35" selection-end-line="21" selection-end-column="35" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/player.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1377">
+          <caret line="84" column="28" selection-start-line="84" selection-start-column="28" selection-end-line="84" selection-end-column="28" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gomill/boards.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="238">
+          <caret line="47" column="16" selection-start-line="47" selection-start-column="16" selection-end-line="47" selection-end-column="16" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/match.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="17">
+          <caret line="1" column="0" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
+          <folding>
+            <element signature="e#25#56#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/doc/python_configuration.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="85">
+          <caret line="5" column="0" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lookup_players.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="187">
+          <caret line="73" column="35" selection-start-line="73" selection-start-column="35" selection-end-line="73" selection-end-column="35" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/context.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="68">
+          <caret line="4" column="13" selection-start-line="4" selection-start-column="13" selection-end-line="4" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/prueba.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="13" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/test_MCPlayerQ.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="7" column="12" selection-start-line="7" selection-start-column="12" selection-end-line="7" selection-end-column="12" />
+          <folding>
+            <element signature="e#0#29#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="51">
+          <caret line="3" column="5" selection-start-line="3" selection-start-column="5" selection-end-line="3" selection-end-column="5" />
+          <folding />
         </state>
       </provider>
     </entry>

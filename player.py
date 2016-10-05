@@ -82,7 +82,7 @@ class PlayerTD(Player):
     pass
 
 class HumanPlayer(Player):
-    def genmove(self):
+    def genmove(self, color):
         """
         the user inputs a tuple with the coordinates for the move
         :return: a tuple with the move, or None for pass
