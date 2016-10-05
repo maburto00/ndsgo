@@ -16,6 +16,7 @@ from gomill.boards import Board
 class MCPlayerQ(Player):
     """
     A player able to train with self play using loookup table for the Q values.
+    We use MC RL with epsilon greedy for exploration to train the player.
 
     Q array description:
     The Q table is an array of n * n + 2 dimensions with shape (2, 3, 3, ... , 3, n * n + 1).
@@ -35,8 +36,6 @@ class MCPlayerQ(Player):
     - a is the action. it is a value from 0 to n*n, where each one indicates a position on the board or passing.
     """
 
-    # TODO: Implement load and save Q values
-    # TODO: Save "Q_history" (history of Q values) and graph how they change
     # TODO: order methods in alphabetical order
     # TODO: move test methods to test_MCPlayerQ.py
     def __init__(self, board, color, epsilon=0.2, seed=None, verbose=False):
@@ -54,33 +53,49 @@ class MCPlayerQ(Player):
 
         self.history = []
         self.epsilon = epsilon
-        self.verbose = verbose
 
         # total number of games played
         self.episodes = 0
 
-        # Q history variables
-        self.Q_history = [[] for _ in range(self.Q.size)]
-        self.Q_history_delta = 1
+        # QH stores the Q values for each "QH_delta"-th episode
+        self.QH = [[] for _ in range(self.Q.size)]
+        self.QH_delta = 1
 
+        # TODO: only store some of the Q values... but always the same indices
         # append initial values of Q
         flat_Q = self.Q.flatten()
         for i in range(self.Q.size):
-            self.Q_history[i].append(flat_Q[i])
+            self.QH[i].append(flat_Q[i])
 
+        self.verbose = verbose
         if seed is not None:
             np.random.seed(seed)
 
-    def new_game(self, board=None):
+    def new_game(self, board = None, color = None):
         """
-        Reset all the necessary variables for a new game (board, history, etc...)
+        Reset all the necessary variables for a new game:
+        - board, color, ko
+        - history
         :return:
         """
+
         if board is None:
             self.board = Board(self.board.side)
+        else:
+            self.board= board
+
+        if color is None:
+            self.color = self.color
+        else:
+            self.color = color
+
+        self.ko = None
         self.history = []
 
-    def save_Q(self, filename='Q_values.npy'):
+    def save_Q(self, filename='Q_values'):
+        # TODO: put default as None and give generic name using internal variables
+        #if filename is None:
+        #    filename="Q_n{}_N{}.npy".format()
         # TODO: analyze if we need to store N (or other variables)
         np.save(filename, self.Q)
 
@@ -88,13 +103,13 @@ class MCPlayerQ(Player):
         # TODO: analyze if we need to store N (or other variables)
         self.Q = np.load(filename)
 
-    def plot_Q_history(self, num_points=10):
+    def plot_QH(self, num_points=10):
         """
 
         :param num_points: the number of equally distant points we want to plot from Q_history
         :return:
         """
-        num_episodes = len(self.Q_history[0])
+        num_episodes = len(self.QH[0])
         if num_points < num_episodes:
             delta = num_episodes / num_points
         else:
@@ -103,7 +118,7 @@ class MCPlayerQ(Player):
 
         for i in range(self.Q.size):
             if i % delta == 0:
-                plt.plot(t, self.Q_history[i])
+                plt.plot(t, self.QH[i])
         plt.show()
 
     def _get_state(self, board_list):
@@ -176,10 +191,12 @@ class MCPlayerQ(Player):
 
     def update_Q(self, G):
         """
-        exploit symmetries, rotation invariance...
+        updates Q values
         :param G: the "return" of the episode, 1 if black wins, -1 if white wins
         :return:
         """
+        # TODO: exploit symmetries, rotation invariance
+
         for (c, s, a) in self.history:
             self.N[c][s][a] += 1
             self.Q[c][s][a] = self.Q[c][s][a] + (G - self.Q[c][s][a]) / self.N[c][s][a]
@@ -187,15 +204,16 @@ class MCPlayerQ(Player):
         flat_Q = self.Q.flatten()
 
         # only store every Q_history_delta iterations
-        if self.episodes % self.Q_history_delta == 0:
+        if self.episodes % self.QH_delta == 0:
             for i in range(self.Q.size):
-                self.Q_history[i].append(flat_Q[i])
+                self.QH[i].append(flat_Q[i])
 
         self.episodes += 1
 
     def automatch(self, n_steps=None):
         """
-        Play one match against itself. NOTE: it doesn't update Q at the end.
+        Play one match against itself. NOTE: it doesn't update Q at the end, just stores history
+        :param n_steps
         :return:
         """
         # TODO: Test this function. Use Debug to see history and board of each match...
@@ -220,23 +238,25 @@ class MCPlayerQ(Player):
                 print(self.board)
                 print('')
 
-    def self_play(self, N):
+    def self_play(self, num_games):
         """
-        Play N times against itself and learn Q values
-        :param N:
+        Play num_games times  against itself and learn Q values
+        :param num_games:
         :return:
         """
-        for i in range(N):
-            print("i: {}, {} elements {} B {} KB {} MB {} GB".format(i,
-                                                                     len(self.Q_history) * self.episodes,
-                                                                     len(self.Q_history) * self.episodes * 8,
-                                                                     len(self.Q_history) * self.episodes * 8 / 1024,
-                                                                     len(self.Q_history) * self.episodes * 8 / (
+        for i in range(num_games):
+            if self.verbose:
+                print("i: {}, {} elements {} B {} KB {} MB {} GB".format(i,
+                                                                     len(self.QH) * self.episodes,
+                                                                     len(self.QH) * self.episodes * 8,
+                                                                     len(self.QH) * self.episodes * 8 / 1024,
+                                                                     len(self.QH) * self.episodes * 8 / (
                                                                      1024 * 1024),
-                                                                     len(self.Q_history) * self.episodes * 8 / (
+                                                                     len(self.QH) * self.episodes * 8 / (
                                                                      1024 * 1024 * 1024)))
             self.automatch()
-            print("history: {}".format(self.history))
+            if self.verbose:
+                print("history({}): {}".format(len(self.history),self.history))
             score = self.board.area_score()
             if self.verbose:
                 print('Match: {} Score: {}'.format(i + 1, score))
@@ -254,7 +274,7 @@ def train_mcplayer():
     """
     mcPlayer = MCPlayerQ(Board(2), 'b', epsilon=0.2, seed=1, verbose=False)
     mcPlayer.self_play(10000)
-    mcPlayer.plot_Q_history()
+    mcPlayer.plot_QH()
     mcPlayer.save_Q('Q_n2_N100.npy')
 
 
@@ -272,7 +292,7 @@ def train_3x3_mcplayer():
     """
     mcPlayer = MCPlayerQ(Board(3), 'b', epsilon=0.2, seed=1, verbose=False)
     mcPlayer.self_play(200)
-    mcPlayer.plot_Q_history()
+    mcPlayer.plot_QH()
     mcPlayer.save_Q('Q_n3_N200.npy')
 
 
@@ -304,11 +324,8 @@ def test_update_Q():
     mcPlayer.history = [(0, (0, 0, 0, 0), 0)]
     mcPlayer.update_Q(0)
     mcPlayer.update_Q(0)
-    mcPlayer.plot_Q_history()
+    mcPlayer.plot_QH()
     #                     (1,())]
-
-
-
 
 def test_memory(n=3):
     """
@@ -339,7 +356,7 @@ def test_self_play():
     """
     mcPlayer = MCPlayerQ(Board(2), 'b', epsilon=0.2, seed=1, verbose=False)
     mcPlayer.self_play(5)
-    mcPlayer.plot_Q_history()
+    mcPlayer.plot_QH()
 
 
 def test_automatch():
@@ -358,7 +375,7 @@ def test_automatch():
     if score != 0:
         G = score / abs(score)
     mcPlayer.update_Q(G)
-    mcPlayer.plot_Q_history()
+    mcPlayer.plot_QH()
 
 
 def print_random_values():
