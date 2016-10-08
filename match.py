@@ -5,6 +5,8 @@ from lookup_players import MCPlayerQ
 
 class Match:
     def __init__(self, board, p1, p2,verbose=False):
+        # TODO: p1 should be the player with black unless there is a handicap
+        # TODO: implement handicap
         self.board = board
         self.p1 = p1
         self.p2 = p2
@@ -25,6 +27,7 @@ class Match:
 
     def play_match(self):
         """ alternate play bw black and white until both pass"""
+
         num_pass = 0
         i = -1
         self.steps=0
@@ -79,6 +82,18 @@ def test_mcplayer_vs_humanplayer():
     match= Match(board.copy(),p1,p2,verbose=True)
     match.play_match()
 
+def test_mcplayer_vs_humanplayer_3x3():
+    """
+    test against human player
+    :return:
+    """
+    board=Board(3)
+    p1 = HumanPlayer(board.copy(), 'b')
+    p2 = MCPlayerQ(board.copy(), 'w',epsilon=0)
+    p2.load_Q('Q_n3_N1000K.npy')
+    match= Match(board.copy(),p1,p2,verbose=True)
+    match.play_match()
+
 def test_human_vs_human():
     board = Board(2)
     p1 = HumanPlayer(board.copy(), 'b')
@@ -128,4 +143,5 @@ def test_mc_vs_mc():
 
 if __name__ == '__main__':
     # test_mc_vs_mc()
-    test_mcplayer_vs_humanplayer()
+    #test_mcplayer_vs_humanplayer()
+    test_mcplayer_vs_humanplayer_3x3()

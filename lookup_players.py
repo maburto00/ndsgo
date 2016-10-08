@@ -145,6 +145,7 @@ class MCPlayerQ(Player):
 
     def genmove(self, color):
         # TODO: call super() See: http://blog.thedigitalcatonline.com/blog/2014/05/19/method-overriding-in-python/#.V-YIDSjhDcc
+
         """
         Plays a move on the internal board and returns the selected move.
         Also, updates N for the s,a pair selected
@@ -182,6 +183,7 @@ class MCPlayerQ(Player):
                 mov = None
                 break
             mov = z_to_xy(a, n)
+            # TODO: fix ko, in 3x3 test it does not recognize it
             if self.ko and mov == self.ko:  # move is a ko so continue
                 continue
             else:
@@ -295,6 +297,11 @@ def play_5_moves():
     mcPlayer.load_Q('Q_n2_N100.npy')
     mcPlayer.automatch(6)
 
+def play_moves_3x3(n = 5):
+    mcPlayer = MCPlayerQ(Board(3), 'b', epsilon=0, seed=None, verbose=True)
+    mcPlayer.load_Q('Q_n3_N1000K.npy')
+    mcPlayer.automatch(n)
+
 
 def train_3x3_mcplayer():
     """
@@ -304,9 +311,10 @@ def train_3x3_mcplayer():
     :return:
     """
     mcPlayer = MCPlayerQ(Board(3), 'b', epsilon=0.2, seed=1, verbose=False)
-    mcPlayer.self_play(200)
+    mcPlayer.set_QH_parameters(QH_numQ=100, QH_delta=1)
+    mcPlayer.self_play(1000000)
     mcPlayer.plot_QH()
-    mcPlayer.save_Q('Q_n3_N200.npy')
+    mcPlayer.save_Q('Q_n3_N1000K.npy')
 
 
 def test_update_Q():
@@ -445,7 +453,8 @@ if __name__ == '__main__':
     # test_update_Q()
     # test_automatch()
     # test_self_play()
-    train_mcplayer()
+    # train_mcplayer()
     # play_5_movs()
-    # train_3x3_mcplayer()
+    play_moves_3x3(20)
+    #train_3x3_mcplayer()
     # print_random_values()
