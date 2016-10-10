@@ -19,9 +19,9 @@ class Match:
         try:
             self.board.play(x, y, color)
             if (self.p1.color == color): # p1 already played the move
-                self.p2.board.play(x, y, color)
+                self.p2.ko = self.p2.board.play(x, y, color)
             else:
-                self.p1.board.play(x, y, color)
+                self.p1.ko = self.p1.board.play(x, y, color)
         except Exception:
             print('exception in update boards match')
 

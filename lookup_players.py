@@ -1,7 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from utils import Color, xy_to_z, z_to_xy, letter2int
+from utils import Color, xy_to_z, z_to_xy, letter2int,eprint
 from player import Player
+
+
 
 # TODO: Do a better planning of classes and files (maybe we can put all of the players in the player.py file)
 # TODO:    and just put comments like this ############# to separate MC, TD, etc...
@@ -173,7 +175,7 @@ class MCPlayerQ(Player):
                                      key=lambda k: self.Q[c][s][k])
 
         if self.verbose:
-            print("{} coin: {} {} ind: {} Q:{}".format('BLACK' if color == 'b' else 'WHITE',
+            eprint("{} coin: {} {} ind: {} Q:{}".format('BLACK' if color == 'b' else 'WHITE',
                                                        coin,
                                                        'RANDOM' if coin <= self.epsilon else 'ORDER',
                                                        ind_actions, self.Q[c][s]))
@@ -194,7 +196,7 @@ class MCPlayerQ(Player):
                 except ValueError:
                     # HEURISTIC: automatically give -10 or +10 value to Q in that state if it is an illegal move
                     # TODO: do the same for the rotation invariant and other invariants...
-                    # print("ValueError exception")
+                    # eprint("ValueError exception")
                     if color == 'b':
                         self.Q[c][s][a] = -10
                     else:
@@ -246,9 +248,9 @@ class MCPlayerQ(Player):
             else:
                 passes += 1
             if (self.verbose):
-                print('Move by {}: {}'.format('BLACK' if c == 'b' else 'WHITE', mov))
-                print(self.board)
-                print('')
+                eprint('Move by {}: {}'.format('BLACK' if c == 'b' else 'WHITE', mov))
+                eprint(self.board)
+                eprint('')
 
     def self_play(self, num_games):
         """
@@ -258,7 +260,7 @@ class MCPlayerQ(Player):
         """
         for i in range(num_games):
             # if self.verbose:
-            print("i: {}, {} elements {} B {} KB {} MB {} GB".format(i,
+            eprint("i: {}, {} elements {} B {} KB {} MB {} GB".format(i,
                                                                      len(self.QH) * self.episodes,
                                                                      len(self.QH) * self.episodes * 8,
                                                                      len(self.QH) * self.episodes * 8 / 1024,
@@ -268,11 +270,11 @@ class MCPlayerQ(Player):
                                                                          1024 * 1024 * 1024)))
             self.automatch()
             # if self.verbose:
-            print("history({}): {}".format(len(self.history), self.history))
+            eprint("history({}): {}".format(len(self.history), self.history))
 
             score = self.board.area_score()
             if self.verbose:
-                print('Match: {} Score: {}'.format(i + 1, score))
+                eprint('Match: {} Score: {}'.format(i + 1, score))
             if score != 0:
                 G = score / abs(score)
             self.update_Q(G)
@@ -434,7 +436,7 @@ def test_mcplayer_genmoves_history():
     board = Board(2)
     player = MCPlayerQ(board, 'b')
     for i in range(10):
-        # pos = player.genmove
+        pos = player.genmove
         print(pos)
         print(player.board)
     print(player.history)

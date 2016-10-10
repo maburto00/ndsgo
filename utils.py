@@ -1,3 +1,6 @@
+from __future__ import print_function
+import sys
+
 class Color:
     """
     Use for indices in lists for Board and for Q tables
@@ -28,3 +31,6 @@ def letter2int(c):
         return Color.BLACK
     elif c == 'w':
         return Color.WHITE
+
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
