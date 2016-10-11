@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from utils import Color, xy_to_z, z_to_xy, letter2int,eprint
+from utils import z_to_xy, letter2int,eprint
 from player import Player
 
 # TODO: Do a better planning of classes and files (maybe we can put all of the players in the player.py file)

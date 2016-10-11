@@ -69,7 +69,7 @@ class GtpEngine:
                         color = 'w'
                     vertex = args[1]
                     try:
-                        (x, y) = cd2xy(vertex)
+                        (x, y) = cd2xy(vertex,self.player.board.side)
                         # TODO: raise illegal move exception and handle it (success=False)
                         # TODO: implement as 'play' in gtp draft.
                         # TODO:   1) update board 2) update captured stones 3) add move to history
@@ -92,15 +92,15 @@ class GtpEngine:
                     if color == 'white':
                         color = 'w'
 
-                    if color!= 'b' and color != 'w':
-                        success=False
-                        result= 'syntax error'
+                    if color != 'b' and color != 'w':
+                        success = False
+                        result = 'syntax error'
                     else:
                         mov = self.player.genmove(color)
                         if mov is None:
                             result = 'pass'
                         else:
-                            result = xy2cd(mov[0], mov[1])
+                            result = xy2cd(mov[0], mov[1],self.player.board.side)
             else:
                 result = 'unknown command'
                 success = False
@@ -121,6 +121,7 @@ def main():
     player.load_Q('Q_n3_N1000K.npy')
     gtp = GtpEngine(player)
     gtp.gtp_session()
+
 
 if __name__ == '__main__':
     main()
