@@ -3,14 +3,10 @@ import matplotlib.pyplot as plt
 from utils import Color, xy_to_z, z_to_xy, letter2int,eprint
 from player import Player
 
-
-
 # TODO: Do a better planning of classes and files (maybe we can put all of the players in the player.py file)
-# TODO:    and just put comments like this ############# to separate MC, TD, etc...
+# TODO: and just put comments like this ############# to separate MC, TD, etc...
 
 from gomill.boards import Board
-
-
 # TODO: use our own Board implementation using [Muller 2002] conventions
 
 class MCPlayerQ(Player):
@@ -88,26 +84,15 @@ class MCPlayerQ(Player):
         for i in range(self.QH_numQ):
             self.QH[i].append(flat_Q[self.QH_Q_perm[i]])
 
-    def new_game(self, board=None, color=None):
-        """
-        Reset all the necessary variables for a new game:
-        - board, color, ko
-        - history
-        :return:
-        """
+    # def new_game(self)
+    #     """
+    #     Reset all the necessary variables for a new game:
+    #     - board, color, ko
+    #     - history
+    #     :return:
+    #     """
+    #     Player.new_game()
 
-        if board is None:
-            self.board = Board(self.board.side)
-        else:
-            self.board = board
-
-        if color is None:
-            self.color = self.color
-        else:
-            self.color = color
-
-        self.ko = None
-        self.history = []
 
     def save_Q(self, filename='Q_values'):
         np.save(filename, self.Q)
@@ -231,7 +216,7 @@ class MCPlayerQ(Player):
         :return:
         """
         # TODO: Test this function. Use Debug to see history and board of each match...
-        self.new_game()
+        self.clear_board()
 
         passes = 0
         colors = ['b', 'w']

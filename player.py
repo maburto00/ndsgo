@@ -35,19 +35,21 @@ class Player:
         self.color = color
         self.ko = None
 
-    def new_game(self,board,color='b'):
-        self.board=board
-        self.color=color
+    def clear_board(self):
+        self.board = Board(self.board.side)
         self.ko = None
+        self.history = []
 
-    def genmove(self):
-        pass
+    def genmove(self,color):
+        print('in player genmove')
+        return None
 
-    def update_board(self, x, y, color):
+    def play(self, color, x, y):
+
         try:
             self.board.play(x, y, color)
         except Exception:
-            print('There was an exception in update board randomplayer')
+            print('There was an exception in update board for player class')
 
     def update_v(self):
         pass

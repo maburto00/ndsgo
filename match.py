@@ -106,14 +106,14 @@ def test_mc_vs_mc():
     p1 = MCPlayerQ(board.copy(), 'b', seed=seed, verbose=verbose)
     p2 = MCPlayerQ(board.copy(), 'w', seed=seed, verbose=verbose)
 
-    p1.new_game(board.copy(), 'b')
-    p2.new_game(board.copy(), 'w')
+    p1.clear_board()
+    p2.clear_board()
 
     match = Match(board.copy(), p1, p2, verbose=verbose)
     match.play_match()
 
-    p1.new_game(board.copy(), 'b')
-    p2.new_game(board.copy(), 'w')
+    p1.clear_board()
+    p2.clear_board()
 
     match = Match(board.copy(), p1, p2, verbose=verbose)
     match.play_match()
@@ -123,22 +123,19 @@ def test_mc_vs_mc():
     #print("N")
     #print(match.p1.N)
     #print("Q")
-    #print(match.p1.Q)
-    #match.p1.update_Q(1)
-    #print("after Q")
-    #print(match.p1.Q)
+    # print(match.p1.Q)
+    # match.p1.update_Q(1)
+    # print("after Q")
+    # print(match.p1.Q)
     print ("steps:{}".format(match.steps))
     pass
 
-    #board = Board(2)
-    #p1 = MCPlayer(board.copy(), 'b')
-    #p2 = MCPlayer(board.copy(), 'w')
-    #match = Match(board.copy(), p1, p2)
-    #match.play_match()
-
-
-
-#def multiple_match():
+    # board = Board(2)
+    # p1 = MCPlayer(board.copy(), 'b')
+    # p2 = MCPlayer(board.copy(), 'w')
+    # match = Match(board.copy(), p1, p2)
+    # match.play_match()
+    # def multiple_match():
 
 
 if __name__ == '__main__':
