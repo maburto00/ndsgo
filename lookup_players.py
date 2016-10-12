@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from utils import z_to_xy, letter2int,eprint
+from utils import z2xy, letter2int,eprint
 from player import Player
 
 # TODO: Do a better planning of classes and files (maybe we can put all of the players in the player.py file)
@@ -169,7 +169,7 @@ class MCPlayerQ(Player):
             if a == n * n:  # pass move
                 mov = None
                 break
-            mov = z_to_xy(a, n)
+            mov = z2xy(a, n)
             # TODO: fix ko, in 3x3 test it does not recognize it
             if self.ko and mov == self.ko:  # move is a ko so continue
                 continue
