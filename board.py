@@ -1,4 +1,4 @@
-from utils import Color, xy2z, cd2p, rc2p, eprint
+from utils import Color, xy2z, cd2p, rc2p, eprint, c_cd2cp
 
 # from collections import deque
 
@@ -115,7 +115,15 @@ class Board:
         # put stone
         self.board[p] = color
 
+        # detect if it is single stone autocapture point (for detecting ko)
+        # later call again to detect suicide once the opposing color stones are captured.
+        group = self._get_group(p)
+        one_point_selfcapture = False
+        if self._surrounded(group) and len(group) == 1:
+            one_point_selfcapture = True
+
         o_color = opposite_color(color)
+        possible_ko = []
         # check for each neighbor of oppossite color and mark for capture (if surrounded)
         for nb in self._neighbors(p):
             # eprint('play() p:{}  nb:{} NS:{} WE:{}'.format(p, nb,NS,WE))
@@ -127,9 +135,16 @@ class Board:
             if self._surrounded(group):
                 for e in group:
                     self.board[e] = Color.EMPTY
+                if len(group) == 1 and one_point_selfcapture:
+                    possible_ko.append(group[0])
                     # eprint(group)
 
-        # check group formed from p
+        if len(possible_ko) == 1:
+            self.ko = possible_ko[0]
+        else:
+            self.ko = None
+
+        # check for suicide
         group = self._get_group(p)
         if self._surrounded(group):
             self.board[p] = Color.EMPTY
@@ -173,97 +188,15 @@ class Board:
 
         return result
 
-        #     def is_legal(self,row,col,color):
-        #         if self.board[row][col] is None:
-        #             return True
-        #         #TODO: implement ko
-        #         # if self.ko is not None:
-        #         #     if (self.ko==(row,col)):
-        #         #         return False
-        #         #if self.is_suicide(row,col)
-        #
-        #     # def get_group(self,pos):
-        #     #     """
-        #     #     return list of positions adjacent to pos
-        #     #     :param pos:
-        #     #     :return:
-        #     #     """
-        #     #     group=[]
-        #     #
-        #     #     to_explore=set()
-        #     #     to_explore.add(pos)
-        #     #     while True:
-        #     #         current_pos=to_explore.pop()
-        #     #         if current_pos not in group: #maybe this validation is unnecessary
-        #     #             group.append(pos)
-        #     #         #explore up,down,left and right:
-        #     #         if UP(pos) not in group:
-        #
-        #     # def get_liberties(self,pos):
-        #     #     (row,col)=pos
-        #     #     color=self.board[row][col]
-        #     #
-        #     # def is_suicide(self,row,col):
-        #     #     pos=(row,col)
-        #     #     if (UP(pos) is None or DOWN(pos) is None or
-        #     #         LEFT(pos) is None or RIGHT(pos) is None):
-        #     #         return False
-        #     #     else:
-        #     #         lib=self.get_liberties(UP(pos))
-        #
-        #     def get_groups(self):
-        #         #hacer busqueda por profundidad
-        #         to_explore=set()
-        #         to_explore.add(point)
-        #         already_in_group=[]
-        #         groups=[] #list of Groups
-        #
-        #         for (row,col) in self.board_points:
-        #             if (row,col) in already_in_group:
-        #                 continue
-        #             #initiate group
-        #             group=[(row,col)]
-        #
-        #
-        #     def get_surrounded(self,x,y):
-        #         """
-        #         get surrounded groups
-        #         :param x:
-        #         :param y:
-        #         :return:
-        #         """
-        #         pos=(x,y)
-        #         check_points=[pos,UP(),DOWN(pos),LEFT(pos),RIGHT(pos)]
-        #         for p in check_points:
-        #             group=get_group(p)
-        #
-        #
-        #     def play(self, x, y, color):
-        #         # TODO: manage captures
-        #         # DONE: illegal move (NotEmptyError)
-        #         # TODO: illegal move (suicide)
-        #         # TODO: manage illega molve (simple ko)
-        #         if self.board[x][y] is not None:
-        #             raise NotEmptyError
-        #         self.board[x][y] = color
-        #         surrounded=self.get_surrounded(x,y)
-        #         if surrounded:
-        #             #if len(surrounded)==1: #only one group is surrounded
-        #             #   pass
-        #             #    if len(surrounded[0])==1: #the group has only one stone (it could be a ko)
-        #             #else:
-        #             for group in surrounded: #capture stones
-        #                 for pos in group:
-        #                     (row,col)=pos
-        #                     self.board[row][col]=None
-        #         else:
-        #             #undo move
-        #             self.board[x][y] = None
-        #             raise SuicideError
-        #
-        #
-        #
-        #         #if surrounded=[] then it is an illegal move
+    def play_seq(self, seq, verbose=False):
+        for s in seq:
+            (c, p) = c_cd2cp(s, self.N)
+            res = self.play(c, p)
+            if verbose:
+                eprint(self)
+                eprint('res:{} ko:{}'.format(res, self.ko))
+        return res
+
         #
         #     def reset(self):
         #         self.board = [[None for _ in range(n)] for _ in range(n)]
@@ -285,16 +218,13 @@ class Board:
         #
         #
 
-        # def test1():
-        #     eprint('Test 1----------')
-        #     board = Board(5)
-        #     board.play(1,2,'b')
-        #     board.play(2, 3, 'b')
-        #     board.play(3, 2, 'b')
-        #     board.play(2, 2, 'w')
-        #     eprint(board)
-        #
-        # # used to test
+
+def test_play_seq():
+    board = Board(5)
+    seq = ['b B3', 'b C4', 'b C2', 'B D3',
+           'W D4', 'w E3', 'w D2']
+    board.play_seq(seq)
+    eprint(board)
 
 
 def test_init():
@@ -314,46 +244,25 @@ def test_suicide():
     N = 5
     board = Board(N)
     eprint(board)
-    seq = [(Color.BLACK, cd2p('B3', N)),
-           (Color.BLACK, cd2p('C4', N)),
-           (Color.BLACK, cd2p('C2', N)),
-           (Color.BLACK, cd2p('D3', N)),
-           (Color.WHITE, cd2p('C3', N))]
-
-    for (c, p) in seq:
-        res = board.play(c, p)
-        eprint(board)
-        eprint('res:{}'.format(res))
-
-
-        # board.play(Color.BLACK, cd2p('A1', 5))
-        # eprint(board)
-        # board.play(Color.WHITE, cd2p('E5', 5))
-        # eprint(board)
+    seq = ['b B3', 'b C4', 'b C2', 'B D3',
+           'W C3']
+    board.play_seq(seq, True)
 
 
 def test_ko():
     N = 5
     board = Board(N)
     eprint(board)
-    seq = [(Color.BLACK, cd2p('B3', N)),
-           (Color.BLACK, cd2p('C4', N)),
-           (Color.BLACK, cd2p('C2', N)),
-           (Color.BLACK, cd2p('D3', N)),
-           (Color.WHITE, cd2p('D4', N)),
-           (Color.WHITE, cd2p('E3', N)),
-           (Color.WHITE, cd2p('D2', N)),
-           (Color.WHITE, cd2p('C3', N))]
+    setup = ['b B3', 'b C4', 'b C2', 'B D3',
+             'W D4', 'w e3', 'w d2']
 
-    for (c, p) in seq:
-        res = board.play(c, p)
-        eprint(board)
-        eprint('res:{}'.format(res))
+    res = board.play_seq(setup)
+    eprint('\n\nAFTER SETUP')
+    eprint(board)
+    eprint('res:{} ko:{}'.format(res, board.ko))
 
-        # board.play(Color.BLACK, cd2p('A1', 5))
-        # eprint(board)
-        # board.play(Color.WHITE, cd2p('E5', 5))
-        # eprint(board)
+    ko_seq = ['w c3', 'b d3', 'b b4', ' w b2', 'b d3', 'w c3']
+    board.play_seq(ko_seq, True)
 
 
 def test_capture():
@@ -413,6 +322,7 @@ if __name__ == '__main__':
     # test_init()
     # test_capture()
     # test_suicide()
+    # test_play_seq()
     test_ko()
     # test_nonempty()
     # test_get_group()

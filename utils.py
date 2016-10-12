@@ -51,6 +51,33 @@ def xy2cd(x, y, N):
     return letter + number
 
 
+def color2c(color):
+    color = color.lower()
+    if color == 'black':
+        color = 'b'
+    if color == 'white':
+        color = 'w'
+
+    if color == 'b':
+        return Color.BLACK
+
+    if color == 'w':
+        return Color.WHITE
+
+
+def c_cd2cp(s, N):
+    """
+    from 'b A1' to tuple (Color.BLACK, p)
+    :param str:
+    :return:
+    """
+    color, move = s.strip().split()
+    # print('color:{} move:{}'.format(color,move))
+    c = color2c(color)
+    p = cd2p(move, N)
+    return (c, p)
+
+
 def cd2p(s, N):
     """
     e.g. from A2 in 2x2 board it returns 4 (the position in the array for that position)
