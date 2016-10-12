@@ -1,12 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from utils import z2xy, letter2int,eprint
+from utils import z2xy, letter2int, eprint
 from player import Player
 
 # TODO: Do a better planning of classes and files (maybe we can put all of the players in the player.py file)
 # TODO: and just put comments like this ############# to separate MC, TD, etc...
 
 from gomill.boards import Board
+
+
 # TODO: use our own Board implementation using [Muller 2002] conventions
 
 class MCPlayerQ(Player):
@@ -161,9 +163,9 @@ class MCPlayerQ(Player):
 
         if self.verbose:
             eprint("{} coin: {} {} ind: {} Q:{}".format('BLACK' if color == 'b' else 'WHITE',
-                                                       coin,
-                                                       'RANDOM' if coin <= self.epsilon else 'ORDER',
-                                                       ind_actions, self.Q[c][s]))
+                                                        coin,
+                                                        'RANDOM' if coin <= self.epsilon else 'ORDER',
+                                                        ind_actions, self.Q[c][s]))
         # try action until legal action is completed
         for a in ind_actions:
             if a == n * n:  # pass move
@@ -181,6 +183,7 @@ class MCPlayerQ(Player):
                 except ValueError:
                     # HEURISTIC: automatically give -10 or +10 value to Q in that state if it is an illegal move
                     # TODO: do the same for the rotation invariant and other invariants...
+                    # TODO: remove -10 +10 heuristic, so we can use None for all IllegalMoves(ko mainly)
                     # eprint("ValueError exception")
                     if color == 'b':
                         self.Q[c][s][a] = -10
@@ -246,13 +249,13 @@ class MCPlayerQ(Player):
         for i in range(num_games):
             # if self.verbose:
             eprint("i: {}, {} elements {} B {} KB {} MB {} GB".format(i,
-                                                                     len(self.QH) * self.episodes,
-                                                                     len(self.QH) * self.episodes * 8,
-                                                                     len(self.QH) * self.episodes * 8 / 1024,
-                                                                     len(self.QH) * self.episodes * 8 / (
-                                                                         1024 * 1024),
-                                                                     len(self.QH) * self.episodes * 8 / (
-                                                                         1024 * 1024 * 1024)))
+                                                                      len(self.QH) * self.episodes,
+                                                                      len(self.QH) * self.episodes * 8,
+                                                                      len(self.QH) * self.episodes * 8 / 1024,
+                                                                      len(self.QH) * self.episodes * 8 / (
+                                                                          1024 * 1024),
+                                                                      len(self.QH) * self.episodes * 8 / (
+                                                                          1024 * 1024 * 1024)))
             self.automatch()
             # if self.verbose:
             eprint("history({}): {}".format(len(self.history), self.history))
@@ -284,7 +287,8 @@ def play_5_moves():
     mcPlayer.load_Q('Q_n2_N100.npy')
     mcPlayer.automatch(6)
 
-def play_moves_3x3(n = 5):
+
+def play_moves_3x3(n=5):
     mcPlayer = MCPlayerQ(Board(3), 'b', epsilon=0, seed=None, verbose=True)
     mcPlayer.load_Q('Q_n3_N1000K.npy')
     mcPlayer.automatch(n)
@@ -443,5 +447,5 @@ if __name__ == '__main__':
     # train_mcplayer()
     # play_5_movs()
     play_moves_3x3(20)
-    #train_3x3_mcplayer()
+    # train_3x3_mcplayer()
     # print_random_values()
