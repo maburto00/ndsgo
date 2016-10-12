@@ -1,24 +1,14 @@
-from utils import Color,xy2z
+from utils import Color, xy2z,cd2p,rc2p
 
 # TODO: test for scoring 2x2 board in these possitions (compare with glGo for example
 # TODO: ..    X.    O.    O.
 # TODO: ..    .X    .O    OO  etc...
 
-# def UP(pos):
-#     return (pos[0]+1,pos[1])
-#
-# def DOWN(pos):
-#     return (pos[0]-1,pos[1])
-#
-# def LEFT(pos):
-#     return (pos[0] + 1, pos[1])
-#
-# def RIGHT(pos):
-#     return (pos[0] + 1, pos[1])
-#
-# def OTHER_COLOR(col):
-#     pass
-#
+NS = 19 + 1
+WE = 1
+letter_coord= 'ABCDEFGHJKLMNOPQRST'
+color_string='.XOY'
+
 class KoError(Exception):
     pass
 
@@ -34,40 +24,87 @@ class NotEmptyError(Exception):
 class Board:
     def __init__(self, N):
         self.N = N
+
+        # update NS
+        NS = N + 1
+
         self.board = [Color.BORDER for _ in range(N + 1)] + \
                      N * ([Color.BORDER] + [Color.EMPTY for _ in range(N)]) + \
                      [Color.BORDER for _ in range(N + 1)]
         self.ko = None
         # captured stones
         self.CS = {'b': 0, 'w': 0}
-        self.history=[]
+        self.history = []
+        self.last_move = None
 
+    def _get_group_liberties(self, temp_board, p, c):
+        target_color = self.board[p]
 
-    def play(self, color, row, col):
-        p=xy2z(row, col, self.N)
-        self.board[p]=color
+        q = [p]
+        liberties = []
+        while q:
+            a = q.pop()
+            temp_board[a] = c
+            for n in (p - NS, p + NS, p - WE, p + WE):
+                if temp_board[n] == target_color:
+                    q.append(n)
+                if temp_board[n] == Color.EMPTY:
+                    liberties.append(n)
+        return liberties
 
-def main():
-    print('Test for board class')
-    board = Board(5)
-    board.play('b', 1, 1)
-    print(board)
+    def _surrounded(self, p):
+        color = self.board[p]
 
-if __name__ == '__main__':
-    main()
+        # make copy of board and flood fill
+        temp_board = self.board[:]
 
-            #
-    #
-    #     #
-    #     # def copy(self):
-    #     #     board = Board(self.n)
-    #     #     board.board = [[self.board[i][j] for j in range(self.n)] for i in range(self.n)]
-    #     #     board.ko = self.ko
-    #     #     return board
-    #     #
-    #     # def _surrounded_groups(self):
-    #     #     pass
-    #
+    def play(self, color, p):
+        # TODO: disallow suicide
+        # TODO: capture
+        # TODO: determine ko
+
+        if p == self.ko:
+            raise KoError
+
+        self.board[p] = color
+
+        # # check for each neighbor
+        # for neighbor in (p - NS, p + NS, p - WE, p + WE):
+        #     #explore if it was captured
+        #     group,liberties = self._get_group_liberties(self.board[:],neighbor,color)
+        #     if not liberties:
+        #         for e in group:
+        #             self.board[e]=Color.EMPTY
+        #
+        #
+        #     temp_board=self._floodfill(neighbor)
+
+        # check for suicide...
+
+        #before the end store last move
+        self.last_move = p
+
+    def __str__(self):
+        """
+            'X' for black, 'O' for white and '.' for empty space
+        """
+        result = '\n\n'
+
+        for row in range(1,self.N+1):
+            result += '{:2} '.format(self.N+1-row)
+            for col in range(1,self.N+1):
+                p = rc2p(row, col, self.N)
+                color_str = color_string[self.board[p]]
+                if p == self.last_move:
+                    result = result[:-1]
+                    result += '('+color_str+')'
+                else:
+                    result += color_str+' '
+            result +='\n'
+        result += '   ' + ''.join('{} '.format(c) for c in letter_coord[:self.N])
+
+        return result
+
     #     def is_legal(self,row,col,color):
     #         if self.board[row][col] is None:
     #             return True
@@ -107,7 +144,7 @@ if __name__ == '__main__':
     #     #         lib=self.get_liberties(UP(pos))
     #
     #     def get_groups(self):
-    #         #hacer búsqueda por profundidad
+    #         #hacer busqueda por profundidad
     #         to_explore=set()
     #         to_explore.add(point)
     #         already_in_group=[]
@@ -118,8 +155,6 @@ if __name__ == '__main__':
     #                 continue
     #             #initiate group
     #             group=[(row,col)]
-    #
-    #
     #
     #
     #     def get_surrounded(self,x,y):
@@ -133,8 +168,6 @@ if __name__ == '__main__':
     #         check_points=[pos,UP(),DOWN(pos),LEFT(pos),RIGHT(pos)]
     #         for p in check_points:
     #             group=get_group(p)
-    #
-    #
     #
     #
     #     def play(self, x, y, color):
@@ -183,22 +216,7 @@ if __name__ == '__main__':
     #         return list_pos
     #
     #
-    #     def __str__(self):
-    #         """
-    #             'X' for black, 'O' for white and '.' for empty space
-    #         """
-    #         result = ''
-    #         for i in range(self.n):
-    #             for j in range(self.n):
-    #                 if self.board[i][j] is None:
-    #                     result += '.'
-    #                 elif self.board[i][j] == 'b':
-    #                     result += 'X'
-    #                 elif self.board[i][j] == 'w':
-    #                     result += 'O'
-    #             result += '\n'
-    #         return result
-    #
+
     # def test1():
     #     print('Test 1----------')
     #     board = Board(5)
@@ -209,5 +227,20 @@ if __name__ == '__main__':
     #     print(board)
     #
     # # used to test
+def test_init():
+    board = Board(3)
+    print(board.board)
+
+def test_play():
+    print('Test for board class')
+    board = Board(5)
+    board.play(Color.BLACK, cd2p('A1', 5))
+    print(board)
+    board.play(Color.WHITE, cd2p('E5', 5))
+    print(board)
 
 
+if __name__ == '__main__':
+    #main()
+    #test_init()
+    test_play()

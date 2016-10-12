@@ -4,16 +4,22 @@ import sys
 # TODO: use new coordinate starting that go from 1 to N instead of 0 to N-1
 # TODO: maybe use only one dimensional coordinates internally to simplify code (not use x,y anymore but only z)
 
-x_str = 'ABCDEFGHJKLMNOPQRST'
-
+letter_coord= 'ABCDEFGHJKLMNOPQRST'
+color_string='.XO-!'
 
 class Color:
     """
     Use for indices in lists for Board (not for Q tables)
     """
-    EMPTY, BLACK, WHITE, BORDER = range(4)
+    EMPTY, BLACK, WHITE, BORDER, FILL = range(5)
     #Empty, Black, White, Border = range(4)
 
+
+
+
+def rc2p(row, col, N):
+    #print('row:{} col:{}'.format(row,col))
+    return row * (N+1) + col
 
 def xy2z(x, y, N):
     """
@@ -34,22 +40,30 @@ def z2xy(z, N):
 def cd2xy(s, N):
     letter = s[0].upper()
     number = s[1:]
-    x = x_str.index(letter)
+    x = letter_coord.index(letter)
     y = N - int(number)
     return (x, y)
 
 
 def xy2cd(x, y, N):
-    letter = x_str[x]
+    letter = letter_coord[x]
     number = str(N - y)
     return letter + number
 
-def cd2z(s,N):
+
+def cd2p(s, N):
+    """
+    e.g. from A2 in 2x2 board it returns 4 (the position in the array for that position)
+    :param s:
+    :param N:
+    :return:
+    """
     letter = s[0].upper()
     number = s[1:]
-    x = x_str.index(letter)
-    y = N - int(number)
-    return x*N + y
+    col = letter_coord.index(letter) + 1
+    row = (N+1) - int(number)
+    #print('row:{} col:{}'.format(row,col))
+    return col + (N+1) * row
 
 
 def letter2int(c):
