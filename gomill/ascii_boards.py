@@ -41,7 +41,7 @@ def render_board(board):
     """
     def format_pt(row, col):
         return _point_strings.get(board.get(row, col), " ?")
-    return "\n".join(render_grid(format_pt, board.side))
+    return "\n".join(render_grid(format_pt, board.N))
 
 def interpret_diagram(diagram, size, board=None):
     """Set up the position from a diagram.
@@ -58,7 +58,7 @@ def interpret_diagram(diagram, size, board=None):
     if board is None:
         board = boards.Board(size)
     else:
-        if board.side != size:
+        if board.N != size:
             raise ValueError("wrong board size, must be %d" % size)
         if not board.is_empty():
             raise ValueError("board not empty")

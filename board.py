@@ -60,8 +60,8 @@ class Board:
     def _get_group(self, p):
         target_color = self.board[p]
 
-        if target_color != Color.WHITE and target_color != Color.BLACK:
-            return []
+        #if target_color != Color.WHITE and target_color != Color.BLACK:
+        #    return []
 
         # copy board
         temp_board = self.board[:]
@@ -167,11 +167,75 @@ class Board:
 
         return Error.NOERROR
 
+    def play_seq(self, seq, verbose=False):
+        for s in seq:
+            (c, p) = c_cd2cp(s, self.N)
+            res = self.play(c, p)
+            if verbose:
+                eprint(self)
+                eprint('res:{} ko:{}'.format(res, self.ko))
+        return res
+
+    def _group_reach(self, group, color):
+        """point reaches color c."""
+
+        for e in group:
+            for nb in self._neighbors(e):
+                if self.board[nb] == color:
+                    return True
+        return False
+
+        # if self._surrounded(group):
+        #    self.board[p] = Color.EMPTY
+        #    # eprint('suicide')
+        #    return Error.SUICIDE
+
+    def score(self):
+        """
+        Score using Tromp-Taylor rules
+        :return:
+        """
+        # make a copy of board and color it
+        scoring_board = self.board[:]
+        # marked_board = self.board[:]
+
+        points = [rc2p(r, c,self.N) for r in range(1, self.N + 1) for c in range(1, self.N + 1)]
+        #eprint(points)
+        #eprint(scoring_board)
+        for p in points:
+            if scoring_board[p] == Color.FILL:
+                #eprint('s_board[p] is Color.FILL')
+                #eprint(scoring_board)
+                continue
+                # if scoring_board[p]==Color.WHITE or scoring_board[p]==Color.BLACK:
+            #                continue
+            # we only care about empty points for coloring
+            if scoring_board[p] == Color.EMPTY:
+                group = self._get_group(p)
+                reach_black = self._group_reach(group, Color.BLACK)
+                reach_white = self._group_reach(group, Color.WHITE)
+
+                if reach_black and not reach_white:
+                    coloring = Color.BLACK
+                elif not reach_black and reach_white:
+                    coloring = Color.WHITE
+                else:
+                    coloring = Color.FILL
+
+                for e in group:
+                    scoring_board[e] = coloring
+
+        # now score:
+        b_points = sum([1 if scoring_board[i] == Color.BLACK else 0 for i in points])
+        w_points = sum([1 if scoring_board[i] == Color.WHITE else 0 for i in points])
+
+        return b_points - w_points
+
     def __str__(self):
         """
             'X' for black, 'O' for white and '.' for empty space
         """
-        result = '\n\n'
+        result = '\n'
 
         for row in range(1, self.N + 1):
             result += '{:2} '.format(self.N + 1 - row)
@@ -187,15 +251,6 @@ class Board:
         result += '   ' + ''.join('{} '.format(c) for c in letter_coord[:self.N])
 
         return result
-
-    def play_seq(self, seq, verbose=False):
-        for s in seq:
-            (c, p) = c_cd2cp(s, self.N)
-            res = self.play(c, p)
-            if verbose:
-                eprint(self)
-                eprint('res:{} ko:{}'.format(res, self.ko))
-        return res
 
         #
         #     def reset(self):
@@ -317,13 +372,37 @@ def test_get_group():
     eprint('group:{}'.format(group))
 
 
+def test_score():
+    board=Board(5)
+    score = board.score()
+    eprint(board)
+    eprint('score:{}'.format(score))
+
+    seq1=['B C5','B C4','B C3','B C2','B C1',
+          'W D5','W D4','W D3','W D2','W D1',]
+    res=board.play_seq(seq1)
+    eprint(board)
+    eprint('res:{} ko:{}'.format(res,board.ko))
+    score=board.score()
+    eprint('score:{}'.format(score))
+
+    board = Board(5)
+    seq2=['B B5','B B4','B B3','B B2','B B1',
+          'W D5','W D4','W C3','W C2','W C1',]
+    res=board.play_seq(seq2)
+    eprint(board)
+    eprint('res:{} ko:{}'.format(res,board.ko))
+    score=board.score()
+    eprint('score:{}'.format(score))
+
 if __name__ == '__main__':
     # main()
     # test_init()
     # test_capture()
     # test_suicide()
     # test_play_seq()
-    test_ko()
+    #test_ko()
+    test_score()
     # test_nonempty()
     # test_get_group()
     # test_str()

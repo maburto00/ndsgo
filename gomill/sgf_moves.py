@@ -33,7 +33,7 @@ def get_setup_and_moves(sgf_game, board=None):
     if board is None:
         board = boards.Board(size)
     else:
-        if board.side != size:
+        if board.N != size:
             raise ValueError("wrong board size, must be %d" % size)
         if not board.is_empty():
             raise ValueError("board not empty")

@@ -69,7 +69,7 @@ class GtpEngine:
                         color = 'w'
                     vertex = args[1]
                     try:
-                        (x, y) = cd2xy(vertex,self.player.board.side)
+                        (x, y) = cd2xy(vertex,self.player.board.N)
                         # TODO: raise illegal move exception and handle it (success=False)
                         # TODO: implement as 'play' in gtp draft.
                         # TODO:   1) update board 2) update captured stones 3) add move to history
@@ -100,7 +100,7 @@ class GtpEngine:
                         if mov is None:
                             result = 'pass'
                         else:
-                            result = xy2cd(mov[0], mov[1],self.player.board.side)
+                            result = xy2cd(mov[0], mov[1],self.player.board.N)
             else:
                 result = 'unknown command'
                 success = False

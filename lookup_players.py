@@ -38,7 +38,7 @@ class MCPlayerQ(Player):
     def __init__(self, board, color, epsilon=0.2, seed=None, verbose=False):
         # TODO: Board should be local, then use method set_board() to change it in case of handicap or something
         Player.__init__(self, board, color)
-        n = board.side
+        n = board.N
 
         if seed is not None:
             np.random.seed(seed)
@@ -141,7 +141,7 @@ class MCPlayerQ(Player):
         :return: (row,col) mov
         """
         # TODO: genmove should not update Q all the time, create fn that does this and call genmove to generate move
-        n = self.board.side
+        n = self.board.N
         # IMPORTANT, don't use utils.Color for this, since black would be 1 and white 2
         c = 0 if color == 'b' else 1
         s = self._get_state(self.board.board)

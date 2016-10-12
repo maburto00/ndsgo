@@ -42,7 +42,7 @@ class Board(object):
 
     """
     def __init__(self, side):
-        self.side = side
+        self.N = side
         self.board_points = [(_row, _col) for _row in range(side)
                              for _col in range(side)]
         self.board = []
@@ -52,8 +52,8 @@ class Board(object):
 
     def copy(self):
         """Return an independent copy of this Board."""
-        b = Board(self.side)
-        b.board = [self.board[i][:] for i in xrange(self.side)]
+        b = Board(self.N)
+        b.board = [self.board[i][:] for i in xrange(self.N)]
         b._is_empty = self._is_empty
         return b
 
@@ -68,7 +68,7 @@ class Board(object):
             r, c = point
             for neighbour in [(r-1, c), (r+1, c), (r, c-1), (r, c+1)]:
                 (r1, c1) = neighbour
-                if not ((0 <= r1 < self.side) and (0 <= c1 < self.side)):
+                if not ((0 <= r1 < self.N) and (0 <= c1 < self.N)):
                     continue
                 neigh_colour = self.board[r1][c1]
                 if neigh_colour is None:
@@ -93,7 +93,7 @@ class Board(object):
             r, c = point
             for neighbour in [(r-1, c), (r+1, c), (r, c-1), (r, c+1)]:
                 (r1, c1) = neighbour
-                if not ((0 <= r1 < self.side) and (0 <= c1 < self.side)):
+                if not ((0 <= r1 < self.N) and (0 <= c1 < self.N)):
                     continue
                 neigh_colour = self.board[r1][c1]
                 if neigh_colour is None:
@@ -159,7 +159,7 @@ class Board(object):
         if surrounded:
             if len(surrounded) == 1:
                 to_capture = surrounded
-                if len(to_capture[0].points) == self.side*self.side:
+                if len(to_capture[0].points) == self.N*self.N:
                     self._is_empty = True
             else:
                 to_capture = [group for group in surrounded

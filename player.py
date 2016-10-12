@@ -10,7 +10,7 @@ from gomill.boards import Board
 # def board2int(board_array):
 #     state=0
 #     #basically we are converting from base-3 to decimal
-#     n=board.side
+#     n=board.N
 #     for i in range(n):
 #         for j in range(n):
 #             pos = (n * i + j)
@@ -36,7 +36,7 @@ class Player:
         self.ko = None
 
     def clear_board(self):
-        self.board = Board(self.board.side)
+        self.board = Board(self.board.N)
         self.ko = None
         self.history = []
 
