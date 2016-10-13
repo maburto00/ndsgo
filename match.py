@@ -1,41 +1,47 @@
 #from board import Board
-from gomill.boards import Board
+#from gomill.boards import Board
+from board import Board
 from player import HumanPlayer
 from lookup_players import MCPlayerQ
+from utils import Color,p2cd,eprint
 
 class Match:
     def __init__(self, board, p1, p2,verbose=False):
         # TODO: p1 should be the player with black unless there is a handicap
         # TODO: implement handicap
         self.board = board
-        self.p1 = p1
-        self.p2 = p2
+        if p1.color==Color.BLACK:
+            self.p1 = p1
+            self.p2 = p2
+        else:
+            self.p1 = p2
+            self.p2 = p1
         self.verbose = verbose
         self.steps=0
 
     def update_boards(self, mov, color):
-        print(mov)
-        (x, y) = mov
-        try:
-            self.board.play(x, y, color)
-            if (self.p1.color == color): # p1 already played the move
-                self.p2.ko = self.p2.board.play(x, y, color)
-            else:
-                self.p1.ko = self.p1.board.play(x, y, color)
-        except Exception:
-            print('exception in update boards match')
+        #print(mov)
+        #eprint('mov(p):{} move:{}'.format(mov,p2cd(mov,self.board.N)))
+
+        res1=self.board.play(color,mov)
+        if(color==self.p1.color):
+            res2=self.p2.board.play(color, mov)
+        else:
+            res2=self.p1.board.play(color, mov)
+
+        if res1<0 or res2<0:
+            eprint('Error in match.update_boards() res1:{} res2:{} res3:{}'.format(res1,res2,res3))
 
     def play_match(self):
         """ alternate play bw black and white until both pass"""
-
+        eprint('INITIAL BOARD')
+        eprint(self.board)
         num_pass = 0
-        i = -1
         self.steps=0
         players = [self.p1, self.p2]
         while num_pass < 2:
-            i += 1
             self.steps += 1
-            current_player = players[i % 2]
+            current_player = players[(self.steps +1) % 2]
             color = current_player.color
             mov = current_player.genmove(color)
 
@@ -45,30 +51,15 @@ class Match:
             else:
                 num_pass += 1
             if(self.verbose):
-                print('Move by {}: {}'.format('BLACK' if color == 'b' else 'WHITE', mov))
-                print(self.board)
-                print('')
+                eprint('Move by {}: {}'.format('BLACK' if color == Color.BLACK else 'WHITE',
+                                               'PASS' if mov is None else p2cd(mov, self.board.N)))
+                #print('Move by {}: {}'.format('BLACK' if color == 'b' else 'WHITE', mov))
+                eprint(self.board)
+                #print('')
 
-        print('end of match')
-        print('Score: {}'.format(self.board.area_score()))
+        #print('end of match')
+        eprint('Score: {}'.format(self.board.score()))
 
-    # def mc_selfplay_update(self):
-    #     score=self.board.area_score()
-    #     if(self.p1.color=='b'):
-    #         self.p1.update_Q(int(score > 0))
-    #         self.p2.update_Q(int(score < 0))
-    #     else:
-    #         self.p2.update_Q(int(score > 0))
-    #         self.p1.update_Q(int(score < 0))
-
-
-# def main():
-#     """test for match"""
-#     board = Board(4)
-#     p1 = RandomPlayer(board.copy(), 'b')
-#     p2 = HumanPlayer(board.copy(), 'w')
-#     match = Match(board.copy(), p1, p2)
-#     match.play_match()
 
 def test_mcplayer_vs_humanplayer():
     """
@@ -76,9 +67,9 @@ def test_mcplayer_vs_humanplayer():
     :return:
     """
     board=Board(2)
-    p1 = MCPlayerQ(board.copy(), 'b',epsilon=0)
-    p1.load_Q('Q_n2_N100.npy')
-    p2 = HumanPlayer(board.copy(), 'w')
+    p1 = MCPlayerQ(board.copy(), Color.WHITE,epsilon=0)
+    p1.load_Q('Q_N2_G100_bkp.npy')
+    p2 = HumanPlayer(board.copy(), Color.BLACK)
     match= Match(board.copy(),p1,p2,verbose=True)
     match.play_match()
 
@@ -127,8 +118,8 @@ def test_mc_vs_mc():
     # match.p1.update_Q(1)
     # print("after Q")
     # print(match.p1.Q)
-    print ("steps:{}".format(match.steps))
-    pass
+    eprint ("steps:{}".format(match.steps))
+
 
     # board = Board(2)
     # p1 = MCPlayer(board.copy(), 'b')
@@ -140,5 +131,5 @@ def test_mc_vs_mc():
 
 if __name__ == '__main__':
     # test_mc_vs_mc()
-    #test_mcplayer_vs_humanplayer()
-    test_mcplayer_vs_humanplayer_3x3()
+    test_mcplayer_vs_humanplayer()
+    #test_mcplayer_vs_humanplayer_3x3()

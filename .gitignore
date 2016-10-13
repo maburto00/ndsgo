@@ -3,3 +3,7 @@
 
 *.npy
 *.pyc
+*.png
+
+!/saved_param/*.npy
+!/saved_param/*.png

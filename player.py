@@ -1,137 +1,99 @@
+from board import Board
+from utils import Color, cd2p,a2p,eprint
 import numpy as np
-import utils
-# from board import Board
-from gomill.boards import Board
-
-
-#TODO: create class MCPlayer
-#TODO: (in the long term) create our own Board and GTP implementations
-
-# def board2int(board_array):
-#     state=0
-#     #basically we are converting from base-3 to decimal
-#     n=board.N
-#     for i in range(n):
-#         for j in range(n):
-#             pos = (n * i + j)
-#             if board.board[pos]=='b':
-#                 state = state + ((3**pos) * 1)
-#             elif board.board[pos]=='w':
-#                 state = state + ((3 ** pos) * 2)
-#     return state
-#
-# def tup2num(t, n):
-#     return n*t[0] + t[1]
 
 class Player:
     """
-        actions go from 0 to n*n, where
-        v #table for the value function
-        q #table for the value function
+    Base class for all the players. We have the following types of players:
+    - Basic player (implemented here) e.g. HumanPlayer, RandomPlayer
+    - Lookup player. Using tables for MC,TD and TD(lambda)
+    - param players. Using function approximation for MC,TD and TD(lambda)
+    - cnn players.
+    - mcts player.
+    - ...
     """
 
-    def __init__(self, board, color='b'):
+    def __init__(self, board, color=Color.BLACK):
         self.board = board
         self.color = color
-        self.ko = None
+        #self.ko = None
 
     def clear_board(self):
+        #TODO: See gtp draft (maybe we have to reset other things
         self.board = Board(self.board.N)
-        self.ko = None
-        self.history = []
+        #self.ko = None
 
-    def genmove(self,color):
-        print('in player genmove')
+    def genmove(self, color):
         return None
 
-    def play(self, color, x, y):
 
-        try:
-            self.board.play(x, y, color)
-        except Exception:
-            print('There was an exception in update board for player class')
+class RandomPlayer(Player):
+    def genmove(self,color):
+        n =self.board.N
+        ind_actions = np.random.permutation(n*n + 1)
 
-    def update_v(self):
-        pass
+        for a in ind_actions:
+            if a == n * n:  # pass move
+                mov = None
+                break
+            mov = a2p(a, n)
 
-    def save_v(self):
-        pass
+            if self.board.ko and mov == self.board.ko:  # move is a ko so continue
+                continue
 
+            else:
+                res = self.board.play(color,mov)
+                if res<0:
+                    #error, so try next action
+                    continue
+                else:
+                    break
+        return mov
 
-# class RandomPlayer(Player):
-#     def genmove(self):
-#         available_pos = self.board.get_available_pos()
-#         len_a = len(available_pos)
-#         r = random.randint(0, len_a)
-#         if r == len_a:
-#             return None
-#         else:
-#             return available_pos[r]
-#
-# class FixedPlayer(Player):
-#
-#     def __init__(self, board, color='b'):
-#         Player.__init__(self, board, color)
-#         fixed_moves = [()]
-#         move_num = 0
-#
-#     def genmove(self):
-#         return (0,0)
-#
-
-
-class PlayerTD(Player):
-    pass
 
 class HumanPlayer(Player):
     def genmove(self, color):
         """
-        the user inputs a tuple with the coordinates for the move
-        :return: a tuple with the move, or None for pass
+        the user inputs the move in the form A1 or B2, etc...
+        :return: position p, or None for pass
         """
         # move_t = input("Enter move (e.g: 0,0 or None for passing): ")
-        #TODO: do in while in order to catch exceptions and manage ko
-
-        mov = raw_input("Enter move (e.g: 0,0 or '' for passing):")
+        # TODO: do in while in order to catch exceptions and manage ko
+        eprint("Enter move (e.g: A1 or '' for passing): ",end='')
+        mov = raw_input()
 
         if mov == '':
             return None
-        return tuple([int(x) for x in mov.split(',')])
+
+        return cd2p(mov, self.board.N)
 
         # def update_board(p1,p2,mov):
         #   human_player.board.play(mov)
 
-def main_human():
+def test_random_player():
+    board = Board(3)
+    player= RandomPlayer(Board(4), Color.BLACK)
+    colors=[Color.BLACK,Color.WHITE]
+    for i in range(5):
+        color=colors[i%2]
+        p=player.genmove(color)
+        if p is not None:
+            player.board.play(color,p)
+        else:
+            eprint('pass')
+        eprint(player.board)
+
+def test_human_player():
     board = Board(4)
-    p1 = HumanPlayer(board.copy(), 'b')
-    mov = p1.genmove()
-    print(mov)
-
-
-def main():
-    """test for player"""
-    print('main')
-    board = Board(4)
-    # p1 = RandomPlayer(board.copy(), 'w')
-    # p2 = RandomPlayer(board.copy(), 'b')
-
-    pass
-    print('hola')
-    print('adios')
-    # human_player=HumanPlayer(board.copy(),'w')
-    # cpu_player = Player(board.copy(), 'b')
-    #
-    # while True:
-    #     #black plays
-    #     mov=human_player.play()
-    #     board.play(mov)
-    #
-    #     #white plays
-    #     mov=cpu_player.play()
-    #     human_player.board.play(mov)
-    #     cpu_player.board.play(mov)
-
+    p1 = HumanPlayer(Board(4), Color.BLACK)
+    eprint(p1.board)
+    mov = p1.genmove(p1.color)
+    eprint('mov:{}'.format(mov))
+    res = p1.board.play(p1.color, mov)
+    eprint(p1.board)
+    eprint('res:{}'.format(res))
 
 if __name__ == '__main__':
-    main()
-
+    # main()
+    #test_human_player()
+    test_random_player()

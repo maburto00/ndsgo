@@ -1,10 +1,8 @@
 from utils import Color, xy2z, cd2p, rc2p, eprint, c_cd2cp
 
 # from collections import deque
+# TODO: method "get_simple_board()" in order to stop using many of the utils like a2p, cd2p, ...
 
-# TODO: test for scoring 2x2 board in these possitions (compare with glGo for example
-# TODO: ..    X.    O.    O.
-# TODO: ..    .X    .O    OO  etc...
 
 # NS is overwriteng in __init__ to be N+1
 NS = 19 + 1
@@ -40,6 +38,17 @@ class Board:
         self.CS = {'b': 0, 'w': 0}
         self.history = []
         self.last_move = None
+
+    def copy(self):
+        board = Board(self.N)
+        board.board=self.board[:]
+        board.ko=self.ko
+        board.CS=self.CS
+        board.history=self.history
+        board.last_move=self.last_move
+
+        return board
+
 
     def _neighbors(self, p):
         """
@@ -195,6 +204,8 @@ class Board:
         Score using Tromp-Taylor rules
         :return:
         """
+        # TODO: add captures and komi as arguments
+
         # make a copy of board and color it
         scoring_board = self.board[:]
         # marked_board = self.board[:]
@@ -251,6 +262,8 @@ class Board:
         result += '   ' + ''.join('{} '.format(c) for c in letter_coord[:self.N])
 
         return result
+
+
 
         #
         #     def reset(self):
@@ -388,12 +401,19 @@ def test_score():
 
     board = Board(5)
     seq2=['B B5','B B4','B B3','B B2','B B1',
-          'W D5','W D4','W C3','W C2','W C1',]
+          'W D5','W D4','W C3','W C2']
     res=board.play_seq(seq2)
     eprint(board)
     eprint('res:{} ko:{}'.format(res,board.ko))
     score=board.score()
     eprint('score:{}'.format(score))
+
+    board.play_seq(['W C1'])
+    eprint(board)
+    eprint('res:{} ko:{}'.format(res, board.ko))
+    score = board.score()
+    eprint('score:{}'.format(score))
+
 
 if __name__ == '__main__':
     # main()

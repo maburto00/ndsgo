@@ -1,12 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from utils import z2xy, letter2int, eprint
+
+from utils import eprint, Color, a2p,p2cd
 from player import Player
 
 # TODO: Do a better planning of classes and files (maybe we can put all of the players in the player.py file)
 # TODO: and just put comments like this ############# to separate MC, TD, etc...
 
-from gomill.boards import Board
+from board import Board
 
 
 # TODO: use our own Board implementation using [Muller 2002] conventions
@@ -18,17 +19,17 @@ class MCPlayerQ(Player):
 
     Q array description:
     The Q table is an array of n * n + 2 dimensions with shape (2, 3, 3, ... , 3, n * n + 1).
-    - The first position defines the color of the player that will play(0 for 'b' and 1 for 'w')
+    - The first position defines the color of the player that will play(0 for BLACK and 1 for WHITE)
     - The next n * n positions define the board state. This is because we have 3 possible values
-    for each intersection of the go board ('b' 'w' or None (empty)).
+    for each intersection of the go board (Color.BLACK, Color.WHITE or Color.EMPTY').
     - The last value is number of possible actions in a given board state. It is n * n + 1 because we have n * n possible
     positions on the board where we could play and we also can pass.
 
     For simplicity we will use three indices for accesing the Q values:
         Q[c][s][a]
     where:
-    - c is the color of the current player. 0 for 'b' and 1 for 'w'.
-    - s is the board state. it is a n*n tuple containing values 0, 1, or 2 (for None, 'b' and 'w', See utils.Color)
+    - c is the color of the current player. 0 for BLACK and 1 for WHITE.
+    - s is the board state. it is a n*n tuple containing values 0, 1, or 2 (for EMPTY, BLACK and WHITE, See utils.Color)
         e.g. for 2x2 board (0,0,0,0) is the empty board and (1,0,0,2) is the board position:   X.                                                                                    X.
                                                                                                .O
     - a is the action. it is a value from 0 to n*n, where each one indicates a position on the board or passing.
@@ -61,6 +62,10 @@ class MCPlayerQ(Player):
         # This default values can be changed before calling self_play() to train.
         self.set_QH_parameters(QH_numQ=1000, QH_delta=1)
 
+    def clear_board(self):
+        Player.clear_board(self)
+        self.history = []
+
     def set_QH_parameters(self, QH_numQ, QH_delta):
         """
         Parameters for storing the evolution of the Q values in order to plot them
@@ -86,16 +91,6 @@ class MCPlayerQ(Player):
         for i in range(self.QH_numQ):
             self.QH[i].append(flat_Q[self.QH_Q_perm[i]])
 
-    # def new_game(self)
-    #     """
-    #     Reset all the necessary variables for a new game:
-    #     - board, color, ko
-    #     - history
-    #     :return:
-    #     """
-    #     Player.new_game()
-
-
     def save_Q(self, filename='Q_values'):
         np.save(filename, self.Q)
 
@@ -109,18 +104,25 @@ class MCPlayerQ(Player):
         :return:
         """
         num_points = len(self.QH[0])
-        # if num_points < num_episodes:
-        #     delta = num_episodes / num_points
-        # else:
-        #     delta = 1
 
-        # In t=0 we have the initial values, then the values stored from update_Q()
+        # In t=0 we have the initial values, then we have the values stored from update_Q()
         t = [0] + [i * self.QH_delta + 1 for i in range(num_points - 1)]
 
+        fig = plt.figure()
+        title='MC Q history N{} G{} QHnumQ{}'.format(self.board.N, (num_points-1) * self.QH_delta,self.QH_numQ)
+        fig.canvas.set_window_title(title)
+
+        plt.title('MC Q values')
+        plt.xlabel('Episodes of self play')
+        plt.ylabel('Q')
+
+
         for i in range(self.QH_numQ):
-            # plt.plot(t, self.QH[i],'b-')
-            plt.plot(t, self.QH[i])
+            plt.plot(t, self.QH[i],'k-')
+            #plt.plot(t, self.QH[i])
+        plt.savefig(title)
         plt.show()
+
 
     def _get_state(self, board_list):
         """
@@ -128,9 +130,12 @@ class MCPlayerQ(Player):
         :param board_list:
         :return:
         """
-        # TODO: when we implement our own board this should change
-        board_flat = map(letter2int, [item for sublist in board_list for item in sublist])
-        return tuple(board_flat)
+        state_list = []
+        n=self.board.N
+        for i in range(n):
+            ind = a2p(i * n, n)
+            state_list += self.board.board[ind:ind + n]
+        return tuple(state_list)
 
     def genmove(self, color):
         # TODO: call super() See: http://blog.thedigitalcatonline.com/blog/2014/05/19/method-overriding-in-python/#.V-YIDSjhDcc
@@ -143,16 +148,17 @@ class MCPlayerQ(Player):
         # TODO: genmove should not update Q all the time, create fn that does this and call genmove to generate move
         n = self.board.N
         # IMPORTANT, don't use utils.Color for this, since black would be 1 and white 2
-        c = 0 if color == 'b' else 1
+        c = 0 if color == Color.BLACK else 1
         s = self._get_state(self.board.board)
+
 
         coin = np.random.random()
         # with probability epsilon choose random action, with probability 1-epsilon choose greedy action
         if coin <= self.epsilon:
             ind_actions = np.random.permutation(n * n + 1)
         else:
-            # See -1. the return G is 1 if black wins and 0 if white wins, so best action is different if player is 'w'
-            if color == 'b':
+            # See -1. the return G is 1 if black wins and 0 if white wins, so best action is different if player is WHITE
+            if color == Color.BLACK:
                 # descending order (from black perspective, we want the action which maximizes Q)
                 ind_actions = sorted(range(n * n + 1),
                                      key=lambda k: -1 * self.Q[c][s][k])
@@ -162,7 +168,7 @@ class MCPlayerQ(Player):
                                      key=lambda k: self.Q[c][s][k])
 
         if self.verbose:
-            eprint("{} coin: {} {} ind: {} Q:{}".format('BLACK' if color == 'b' else 'WHITE',
+            eprint("{} coin: {} {} ind: {} Q:{}".format('BLACK' if color == Color.BLACK else 'WHITE',
                                                         coin,
                                                         'RANDOM' if coin <= self.epsilon else 'ORDER',
                                                         ind_actions, self.Q[c][s]))
@@ -171,25 +177,18 @@ class MCPlayerQ(Player):
             if a == n * n:  # pass move
                 mov = None
                 break
-            mov = z2xy(a, n)
-            # TODO: fix ko, in 3x3 test it does not recognize it
-            if self.ko and mov == self.ko:  # move is a ko so continue
+            #mov = z2xy(a, n)
+            mov = a2p(a,n)
+
+            if self.board.ko and mov == self.board.ko:  # move is a ko so continue
                 continue
             else:
-                try:
-                    (row, col) = mov
-                    self.ko = self.board.play(row, col, color)
-                    break
-                except ValueError:
-                    # HEURISTIC: automatically give -10 or +10 value to Q in that state if it is an illegal move
-                    # TODO: do the same for the rotation invariant and other invariants...
-                    # TODO: remove -10 +10 heuristic, so we can use None for all IllegalMoves(ko mainly)
-                    # eprint("ValueError exception")
-                    if color == 'b':
-                        self.Q[c][s][a] = -10
-                    else:
-                        self.Q[c][s][a] = 10
+                res = self.board.play(color, mov)
+                if res < 0:
+                    # error, so try next action
                     continue
+                else:
+                    break
         self.history.append((c, s, a))
         return mov
 
@@ -222,7 +221,7 @@ class MCPlayerQ(Player):
         self.clear_board()
 
         passes = 0
-        colors = ['b', 'w']
+        colors = [Color.BLACK, Color.WHITE]
         steps = 0
 
         while passes < 2:
@@ -236,7 +235,7 @@ class MCPlayerQ(Player):
             else:
                 passes += 1
             if (self.verbose):
-                eprint('Move by {}: {}'.format('BLACK' if c == 'b' else 'WHITE', mov))
+                eprint('Move by {}: {}'.format('BLACK' if c == Color.BLACK else 'WHITE', 'PASS' if mov is None else p2cd(mov,self.board.N)))
                 eprint(self.board)
                 eprint('')
 
@@ -258,9 +257,10 @@ class MCPlayerQ(Player):
                                                                           1024 * 1024 * 1024)))
             self.automatch()
             # if self.verbose:
-            eprint("history({}): {}".format(len(self.history), self.history))
 
-            score = self.board.area_score()
+
+            score = self.board.score()
+            eprint("score: {} history({}): {}".format(score,len(self.history), self.history))
             if self.verbose:
                 eprint('Match: {} Score: {}'.format(i + 1, score))
             if score != 0:
@@ -268,28 +268,41 @@ class MCPlayerQ(Player):
             self.update_Q(G)
 
 
-def train_mcplayer():
+def train_mcplayer(N=2,num_games=1000000):
     """
     Play N=1000 games of selfplay on 2x2 board and update Q values
     Then store the Q values on file 'Q_1000.npy'
     See plot of Q values.
     :return:
     """
-    mcPlayer = MCPlayerQ(Board(2), 'b', epsilon=0.2, seed=1, verbose=False)
-    mcPlayer.set_QH_parameters(QH_numQ=1, QH_delta=50)
-    mcPlayer.self_play(100)
+    #TODO: define QH_delta as a function of the number of games
+    mcPlayer = MCPlayerQ(Board(2), Color.BLACK, epsilon=0.2, seed=1, verbose=False)
+
+    episodes_to_plot=1000
+    QH_delta = num_games//episodes_to_plot
+    if QH_delta<1:
+        QH_delta=1
+
+    mcPlayer.set_QH_parameters(QH_numQ=1000, QH_delta=QH_delta)
+    mcPlayer.self_play(num_games)
+
+    file_name = 'MC_Q_N{}_G{}.npy'.format(N, num_games)
+    eprint('e2plot:{} Qdelta:{} file:{} '.format(episodes_to_plot, QH_delta, file_name))
+    mcPlayer.save_Q(file_name)
+
     mcPlayer.plot_QH()
-    mcPlayer.save_Q('Q_n2_N100.npy')
+
+
 
 
 def play_5_moves():
-    mcPlayer = MCPlayerQ(Board(2), 'b', epsilon=0, seed=None, verbose=True)
-    mcPlayer.load_Q('Q_n2_N100.npy')
+    mcPlayer = MCPlayerQ(Board(2), Color.BLACK, epsilon=0, seed=None, verbose=True)
+    mcPlayer.load_Q('Q_n2_N10K.npy')
     mcPlayer.automatch(6)
 
 
 def play_moves_3x3(n=5):
-    mcPlayer = MCPlayerQ(Board(3), 'b', epsilon=0, seed=None, verbose=True)
+    mcPlayer = MCPlayerQ(Board(3), Color.BLACK, epsilon=0, seed=None, verbose=True)
     mcPlayer.load_Q('Q_n3_N1000K.npy')
     mcPlayer.automatch(n)
 
@@ -301,7 +314,7 @@ def train_3x3_mcplayer():
     See plot of Q values.
     :return:
     """
-    mcPlayer = MCPlayerQ(Board(3), 'b', epsilon=0.2, seed=1, verbose=False)
+    mcPlayer = MCPlayerQ(Board(3), Color.BLACK, epsilon=0.2, seed=1, verbose=False)
     mcPlayer.set_QH_parameters(QH_numQ=100, QH_delta=1)
     mcPlayer.self_play(1000000)
     mcPlayer.plot_QH()
@@ -314,20 +327,19 @@ def test_update_Q():
     Create fixed history and call update_Q
     history:
 
-    ..    X.    X.    X.    X.
-    ..    ..    .O    .O    .O
-          A2    B1    pass  pass
+    ..    X.    X.    X.
+    ..    ..    .O    .O
+          A2    B1    pass
 
     Elements of history are of the form: (c, s, a)
-      c can take value 0 for 'b' and 1 for 'w'
+      c can take value 0 for BLACK and 1 for WHITE
       s is of the form (0,1,....,n*n-1)
       a takes values 0,1,... and n*n where n*n is passing
     :return:
     """
-    mcPlayer = MCPlayerQ(Board(2), 'b', epsilon=0.2, seed=1, verbose=True)
+    mcPlayer = MCPlayerQ(Board(2), Color.BLACK, epsilon=0.2, seed=1, verbose=True)
     mcPlayer.history = [(0, (0, 0, 0, 0), 0),
                         (1, (1, 0, 0, 0), 3),
-                        (0, (1, 0, 0, 2), 4),
                         (0, (1, 0, 0, 2), 4)]
 
     # this is not actually true, but just for the test
@@ -335,9 +347,9 @@ def test_update_Q():
     mcPlayer.update_Q(1)
     mcPlayer.history = [(0, (0, 0, 0, 0), 0)]
     mcPlayer.update_Q(0)
+    mcPlayer.history = [(0, (0, 0, 0, 0), 0),(0, (1, 0, 0, 2), 4)]
     mcPlayer.update_Q(0)
     mcPlayer.plot_QH()
-    #                     (1,())]
 
 
 def test_memory(n=3):
@@ -350,8 +362,8 @@ def test_memory(n=3):
      n = 4 . MemoryError
     :return:
     """
-    mcPlayer = MCPlayerQ(Board(n), 'b', epsilon=0.2, seed=1, verbose=True)
-    print("{} elements {} B {} KB {} MB {} GB".format(mcPlayer.Q.size,
+    mcPlayer = MCPlayerQ(Board(n), Color.BLACK, epsilon=0.2, seed=1, verbose=True)
+    eprint("{} elements {} B {} KB {} MB {} GB".format(mcPlayer.Q.size,
                                                       mcPlayer.Q.nbytes,
                                                       mcPlayer.Q.nbytes / 1024,
                                                       mcPlayer.Q.nbytes / (1024 * 1024),
@@ -367,24 +379,24 @@ def test_self_play():
     Check that history (and other variables) are reinitialized in each game
     :return:
     """
-    mcPlayer = MCPlayerQ(Board(2), 'b', epsilon=0.2, seed=1, verbose=False)
+    mcPlayer = MCPlayerQ(Board(2), Color.BLACK, epsilon=0.2, seed=1, verbose=False)
     mcPlayer.self_play(5)
     mcPlayer.plot_QH()
 
 
 def test_automatch():
     """
-    STATUS: ?
+    STATUS: OK
     Play an automatch with seed=1, and plot Q values
     Test:
     ? 1) The printed game and the self.history variable correspond to each other
     ? 2) Play a second match and check the same as in test 1
     :return:
     """
-    mcPlayer = MCPlayerQ(Board(2), 'b', epsilon=0.2, seed=2, verbose=True)
+    mcPlayer = MCPlayerQ(Board(2), Color.BLACK, epsilon=0.2, seed=2, verbose=False)
     mcPlayer.automatch()
-    score = mcPlayer.board.area_score()
-    print('Score: {}'.format(score))
+    score = mcPlayer.board.score()
+    eprint('Score: {}'.format(score))
     if score != 0:
         G = score / abs(score)
     mcPlayer.update_Q(G)
@@ -398,8 +410,8 @@ def print_random_values():
     :return:
     """
     for iter in range(11):
-        print('')
-        print('seed({})'.format(iter))
+        eprint('')
+        eprint('seed({})'.format(iter))
         np.random.seed(iter)
         list1 = []
         for i in range(10):
@@ -411,32 +423,36 @@ def print_random_values():
             list2.append(np.random.permutation(2 * 2 + 1))
 
         for i in range(10):
-            print("{:>5} {:>20} {:>15}".format(i + 1, list1[i], list2[i]))
+            eprint("{:>5} {:>20} {:>15}".format(i + 1, list1[i], list2[i]))
 
 
-def test_mcplayer_genmoves_history():
-    """
-    Basic test, play against fixed player...
-    STATUS:
-    :return:
-    """
-    np.random.seed(1)
+# def test_mcplayer_genmoves_history():
+#     """
+#     Basic test, play against fixed player...
+#     STATUS:
+#     :return:
+#     """
+#     np.random.seed(1)
+#
+#     board = Board(2)
+#     player = MCPlayerQ(board, Color.BLACK)
+#     for i in range(10):
+#         pos = player.genmove(Color.BLACK)
+#         eprint(pos)
+#         eprint(player.board)
+#     eprint(player.history)
+#     # eprint("N")
+#     # eprint(player.N)
+#     # eprint("Q")
+#     # eprint(player.Q)
+#     # player.update_Q(1)
+#     # eprint("after Q")
+#     # eprint(player.Q)
+#     # pass
 
-    board = Board(2)
-    player = MCPlayerQ(board, 'b')
-    for i in range(10):
-        pos = player.genmove
-        print(pos)
-        print(player.board)
-    print(player.history)
-    # print("N")
-    # print(player.N)
-    # print("Q")
-    # print(player.Q)
-    # player.update_Q(1)
-    # print("after Q")
-    # print(player.Q)
-    # pass
+def test_get_state():
+    mcPlayer = MCPlayerQ(Board(2), Color.BLACK, epsilon=0.2, seed=2, verbose=True)
+    mcPlayer._get_state(mcPlayer.board)
 
 
 if __name__ == '__main__':
@@ -444,8 +460,13 @@ if __name__ == '__main__':
     # test_update_Q()
     # test_automatch()
     # test_self_play()
-    # train_mcplayer()
-    # play_5_movs()
-    play_moves_3x3(20)
+
+    for i in [10**2,10**3,10**4,10**5,10**6]:
+        train_mcplayer(2, i)
+    #train_mcplayer()
+
+    # play_5_moves()
+    #test_get_state()
+    #play_moves_3x3(20)
     # train_3x3_mcplayer()
     # print_random_values()

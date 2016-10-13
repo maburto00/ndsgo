@@ -1,4 +1,4 @@
-from utils import cd2xy, xy2cd
+from utils import cd2xy, p2cd
 from utils import eprint
 
 
@@ -100,7 +100,7 @@ class GtpEngine:
                         if mov is None:
                             result = 'pass'
                         else:
-                            result = xy2cd(mov[0], mov[1],self.player.board.N)
+                            result = p2cd(mov,self.player.board.N)
             else:
                 result = 'unknown command'
                 success = False
