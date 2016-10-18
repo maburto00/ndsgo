@@ -65,7 +65,10 @@ class HumanPlayer(Player):
         if mov == '':
             return None
 
-        return cd2p(mov, self.board.N)
+        p=cd2p(mov,self.board.N)
+        self.board.play(color,p)
+
+        return p
 
         # def update_board(p1,p2,mov):
         #   human_player.board.play(mov)

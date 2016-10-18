@@ -21,21 +21,23 @@ class Match:
 
     def update_boards(self, mov, color):
         #print(mov)
-        #eprint('mov(p):{} move:{}'.format(mov,p2cd(mov,self.board.N)))
+        eprint('mov(p):{} move:{}'.format(mov,p2cd(mov,self.board.N)))
 
-        res1=self.board.play(color,mov)
-        if(color==self.p1.color):
+        res1 = self.board.play(color,mov)
+        if color == self.p1.color:
             res2=self.p2.board.play(color, mov)
         else:
             res2=self.p1.board.play(color, mov)
 
         if res1<0 or res2<0:
-            eprint('Error in match.update_boards() res1:{} res2:{} res3:{}'.format(res1,res2,res3))
+            eprint('Error in match.update_boards() mov:{} color:{} res1:{} res2:{} '.format(mov,color,res1,res2))
 
     def play_match(self):
         """ alternate play bw black and white until both pass"""
         eprint('INITIAL BOARD')
         eprint(self.board)
+        #eprint(self.p1.board)
+        #eprint(self.p2.board)
         num_pass = 0
         self.steps=0
         players = [self.p1, self.p2]
@@ -55,6 +57,8 @@ class Match:
                                                'PASS' if mov is None else p2cd(mov, self.board.N)))
                 #print('Move by {}: {}'.format('BLACK' if color == 'b' else 'WHITE', mov))
                 eprint(self.board)
+                #eprint(self.p1.board)
+                #eprint(self.p2.board)
                 #print('')
 
         #print('end of match')
@@ -79,9 +83,9 @@ def test_mcplayer_vs_humanplayer_3x3():
     :return:
     """
     board=Board(3)
-    p1 = HumanPlayer(board.copy(), 'b')
-    p2 = MCPlayerQ(board.copy(), 'w',epsilon=0)
-    p2.load_Q('Q_n3_N1000K.npy')
+    p1 = HumanPlayer(board.copy(), Color.WHITE)
+    p2 = MCPlayerQ(board.copy(), Color.BLACK,epsilon=0)
+    p2.load_Q('MC_Q_N3_G1000000_seed2.npy')
     match= Match(board.copy(),p1,p2,verbose=True)
     match.play_match()
 
@@ -131,5 +135,5 @@ def test_mc_vs_mc():
 
 if __name__ == '__main__':
     # test_mc_vs_mc()
-    test_mcplayer_vs_humanplayer()
-    #test_mcplayer_vs_humanplayer_3x3()
+    #test_mcplayer_vs_humanplayer()
+    test_mcplayer_vs_humanplayer_3x3()

@@ -1,11 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
-from utils import eprint, Color, a2p,p2cd
+from utils import eprint, Color, a2p, p2cd
 from player import Player
 
 # TODO: Do a better planning of classes and files (maybe we can put all of the players in the player.py file)
 # TODO: and just put comments like this ############# to separate MC, TD, etc...
+# TODO: Store N table also in order to be able to stop and restart training
 
 from board import Board
 
@@ -41,6 +43,7 @@ class MCPlayerQ(Player):
         Player.__init__(self, board, color)
         n = board.N
 
+        self.seed = seed
         if seed is not None:
             np.random.seed(seed)
         self.verbose = verbose
@@ -109,20 +112,19 @@ class MCPlayerQ(Player):
         t = [0] + [i * self.QH_delta + 1 for i in range(num_points - 1)]
 
         fig = plt.figure()
-        title='MC Q history N{} G{} QHnumQ{}'.format(self.board.N, (num_points-1) * self.QH_delta,self.QH_numQ)
+        title = 'MC Q history N{} G{} QHnumQ{} seed{}'.format(self.board.N, (num_points - 1) * self.QH_delta,
+                                                               self.QH_numQ, self.seed)
         fig.canvas.set_window_title(title)
 
         plt.title('MC Q values')
         plt.xlabel('Episodes of self play')
         plt.ylabel('Q')
 
-
         for i in range(self.QH_numQ):
-            plt.plot(t, self.QH[i],'k-')
-            #plt.plot(t, self.QH[i])
+            plt.plot(t, self.QH[i], 'k-')
+            # plt.plot(t, self.QH[i])
         plt.savefig(title)
         plt.show()
-
 
     def _get_state(self, board_list):
         """
@@ -131,7 +133,7 @@ class MCPlayerQ(Player):
         :return:
         """
         state_list = []
-        n=self.board.N
+        n = self.board.N
         for i in range(n):
             ind = a2p(i * n, n)
             state_list += self.board.board[ind:ind + n]
@@ -150,7 +152,6 @@ class MCPlayerQ(Player):
         # IMPORTANT, don't use utils.Color for this, since black would be 1 and white 2
         c = 0 if color == Color.BLACK else 1
         s = self._get_state(self.board.board)
-
 
         coin = np.random.random()
         # with probability epsilon choose random action, with probability 1-epsilon choose greedy action
@@ -177,8 +178,8 @@ class MCPlayerQ(Player):
             if a == n * n:  # pass move
                 mov = None
                 break
-            #mov = z2xy(a, n)
-            mov = a2p(a,n)
+            # mov = z2xy(a, n)
+            mov = a2p(a, n)
 
             if self.board.ko and mov == self.board.ko:  # move is a ko so continue
                 continue
@@ -235,7 +236,8 @@ class MCPlayerQ(Player):
             else:
                 passes += 1
             if (self.verbose):
-                eprint('Move by {}: {}'.format('BLACK' if c == Color.BLACK else 'WHITE', 'PASS' if mov is None else p2cd(mov,self.board.N)))
+                eprint('Move by {}: {}'.format('BLACK' if c == Color.BLACK else 'WHITE',
+                                               'PASS' if mov is None else p2cd(mov, self.board.N)))
                 eprint(self.board)
                 eprint('')
 
@@ -260,7 +262,7 @@ class MCPlayerQ(Player):
 
 
             score = self.board.score()
-            eprint("score: {} history({}): {}".format(score,len(self.history), self.history))
+            eprint("score: {} history({}): {}".format(score, len(self.history), self.history))
             if self.verbose:
                 eprint('Match: {} Score: {}'.format(i + 1, score))
             if score != 0:
@@ -268,31 +270,31 @@ class MCPlayerQ(Player):
             self.update_Q(G)
 
 
-def train_mcplayer(N=2,num_games=1000000):
+def train_mcplayer(N=2, num_games=1000000, seed=2):
     """
     Play N=1000 games of selfplay on 2x2 board and update Q values
     Then store the Q values on file 'Q_1000.npy'
     See plot of Q values.
     :return:
     """
-    #TODO: define QH_delta as a function of the number of games
-    mcPlayer = MCPlayerQ(Board(2), Color.BLACK, epsilon=0.2, seed=1, verbose=False)
+    # TODO: define QH_delta as a function of the number of games
+    # TODO: use the seed when we want the same graphics for 100,1000,... games of selfplay
+    # TODO: remove seed for general training.
+    mcPlayer = MCPlayerQ(Board(N), Color.BLACK, epsilon=0.2, seed=seed, verbose=False)
 
-    episodes_to_plot=1000
-    QH_delta = num_games//episodes_to_plot
-    if QH_delta<1:
-        QH_delta=1
+    episodes_to_plot = 1000
+    QH_delta = num_games // episodes_to_plot
+    if QH_delta < 1:
+        QH_delta = 1
 
     mcPlayer.set_QH_parameters(QH_numQ=1000, QH_delta=QH_delta)
     mcPlayer.self_play(num_games)
 
-    file_name = 'MC_Q_N{}_G{}.npy'.format(N, num_games)
+    file_name = 'MC_Q_N{}_G{}_seed{}.npy'.format(N, num_games, seed)
     eprint('e2plot:{} Qdelta:{} file:{} '.format(episodes_to_plot, QH_delta, file_name))
     mcPlayer.save_Q(file_name)
 
     mcPlayer.plot_QH()
-
-
 
 
 def play_5_moves():
@@ -301,24 +303,10 @@ def play_5_moves():
     mcPlayer.automatch(6)
 
 
-def play_moves_3x3(n=5):
+def play_moves_3x3(steps=5):
     mcPlayer = MCPlayerQ(Board(3), Color.BLACK, epsilon=0, seed=None, verbose=True)
-    mcPlayer.load_Q('Q_n3_N1000K.npy')
-    mcPlayer.automatch(n)
-
-
-def train_3x3_mcplayer():
-    """
-    Play N=1000 games of selfplay on 2x2 board and update Q values
-    Then store the Q values on file 'Q_1000.npy'
-    See plot of Q values.
-    :return:
-    """
-    mcPlayer = MCPlayerQ(Board(3), Color.BLACK, epsilon=0.2, seed=1, verbose=False)
-    mcPlayer.set_QH_parameters(QH_numQ=100, QH_delta=1)
-    mcPlayer.self_play(1000000)
-    mcPlayer.plot_QH()
-    mcPlayer.save_Q('Q_n3_N1000K.npy')
+    mcPlayer.load_Q('MC_Q_N3_G1000000_seed2.npy')
+    mcPlayer.automatch(steps)
 
 
 def test_update_Q():
@@ -347,7 +335,7 @@ def test_update_Q():
     mcPlayer.update_Q(1)
     mcPlayer.history = [(0, (0, 0, 0, 0), 0)]
     mcPlayer.update_Q(0)
-    mcPlayer.history = [(0, (0, 0, 0, 0), 0),(0, (1, 0, 0, 2), 4)]
+    mcPlayer.history = [(0, (0, 0, 0, 0), 0), (0, (1, 0, 0, 2), 4)]
     mcPlayer.update_Q(0)
     mcPlayer.plot_QH()
 
@@ -364,10 +352,10 @@ def test_memory(n=3):
     """
     mcPlayer = MCPlayerQ(Board(n), Color.BLACK, epsilon=0.2, seed=1, verbose=True)
     eprint("{} elements {} B {} KB {} MB {} GB".format(mcPlayer.Q.size,
-                                                      mcPlayer.Q.nbytes,
-                                                      mcPlayer.Q.nbytes / 1024,
-                                                      mcPlayer.Q.nbytes / (1024 * 1024),
-                                                      mcPlayer.Q.nbytes / (1024 * 1024 * 1024)))
+                                                       mcPlayer.Q.nbytes,
+                                                       mcPlayer.Q.nbytes / 1024,
+                                                       mcPlayer.Q.nbytes / (1024 * 1024),
+                                                       mcPlayer.Q.nbytes / (1024 * 1024 * 1024)))
 
 
 # TODO: create folder tests and move all mc player tests to file mcplayer_tests.py
@@ -425,31 +413,6 @@ def print_random_values():
         for i in range(10):
             eprint("{:>5} {:>20} {:>15}".format(i + 1, list1[i], list2[i]))
 
-
-# def test_mcplayer_genmoves_history():
-#     """
-#     Basic test, play against fixed player...
-#     STATUS:
-#     :return:
-#     """
-#     np.random.seed(1)
-#
-#     board = Board(2)
-#     player = MCPlayerQ(board, Color.BLACK)
-#     for i in range(10):
-#         pos = player.genmove(Color.BLACK)
-#         eprint(pos)
-#         eprint(player.board)
-#     eprint(player.history)
-#     # eprint("N")
-#     # eprint(player.N)
-#     # eprint("Q")
-#     # eprint(player.Q)
-#     # player.update_Q(1)
-#     # eprint("after Q")
-#     # eprint(player.Q)
-#     # pass
-
 def test_get_state():
     mcPlayer = MCPlayerQ(Board(2), Color.BLACK, epsilon=0.2, seed=2, verbose=True)
     mcPlayer._get_state(mcPlayer.board)
@@ -461,12 +424,14 @@ if __name__ == '__main__':
     # test_automatch()
     # test_self_play()
 
-    for i in [10**2,10**3,10**4,10**5,10**6]:
-        train_mcplayer(2, i)
-    #train_mcplayer()
+    #for i in [10 ** 2, 10 ** 3, 10 ** 4, 10 ** 5, 10 ** 6]:
+    #    train_mcplayer(2, i)
 
-    # play_5_moves()
-    #test_get_state()
-    #play_moves_3x3(20)
-    # train_3x3_mcplayer()
-    # print_random_values()
+    t0=time.time()
+    train_mcplayer(3,10**7)
+    eprint('time to train:{}'.format(time.time()-t0))
+        # play_5_moves()
+        # test_get_state()
+        #play_moves_3x3(20)
+        # train_3x3_mcplayer()
+        # print_random_values()
