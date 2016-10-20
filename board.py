@@ -2,6 +2,7 @@ from utils import Color, xy2z, cd2p, rc2p, eprint, c_cd2cp
 
 # from collections import deque
 # TODO: method "get_simple_board()" in order to stop using many of the utils like a2p, cd2p, ...
+# TODO: test on 19x19 board: false eye, two eyes
 
 
 # NS is overwriteng in __init__ to be N+1
