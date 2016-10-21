@@ -1,6 +1,7 @@
 from unittest import TestCase
-from gtp_engine import GtpEngine
+
 from board import Board
+from gtp_engine import GtpEngine
 from lookup_players import MCPlayerQ
 from utils import Color
 

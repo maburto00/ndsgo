@@ -1,8 +1,8 @@
 # from board import Board
 # from gomill.boards import Board
 from board import Board
-from player import HumanPlayer
 from lookup_players import MCPlayerQ
+from player import HumanPlayer
 from utils import Color, p2cd, eprint
 
 
@@ -63,7 +63,7 @@ class Match:
                 # print('')
 
         # print('end of match')
-        eprint('Score: {}'.format(self.board.score()))
+        eprint('Score: {}'.format(self.board.tromp_taylor_score()))
 
 
 def test_mcplayer_vs_humanplayer():
@@ -105,14 +105,14 @@ def test_mc_vs_mc():
     p1 = MCPlayerQ(board.copy(), 'b', seed=seed, verbose=verbose)
     p2 = MCPlayerQ(board.copy(), 'w', seed=seed, verbose=verbose)
 
-    p1.clear_board()
-    p2.clear_board()
+    p1.new_game()
+    p2.new_game()
 
     match = Match(board.copy(), p1, p2, verbose=verbose)
     match.play_match()
 
-    p1.clear_board()
-    p2.clear_board()
+    p1.new_game()
+    p2.new_game()
 
     match = Match(board.copy(), p1, p2, verbose=verbose)
     match.play_match()

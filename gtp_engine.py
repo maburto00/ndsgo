@@ -1,7 +1,8 @@
-from utils import p2cd, eprint, Color, c_cd2cp, color2c
-from lookup_players import MCPlayerQ
-from board import Board
 import sys
+
+from board import Board
+from lookup_players import MCPlayerQ
+from utils import p2cd, eprint, Color, c_cd2cp, color2c
 
 player_file = ['0', '1',
                '/home/mario/Dropbox/PycharmProjects/ndsgo/saved_param/MC_Q_N2_G1000000_seed2.npy',
@@ -75,7 +76,7 @@ class GtpEngine:
                 self.player = MCPlayerQ(board, self.player.color, self.player.epsilon, self.player.verbose)
                 self.player.load_Q(player_file[size])
             elif cmd == 'clear_board':
-                self.player.clear_board()
+                self.player.new_game()
             # elif cmd == 'komi':
             #     pass
             elif cmd == 'play':

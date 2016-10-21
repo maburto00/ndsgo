@@ -1,5 +1,4 @@
 from unittest import TestCase
-from lookup_players import MCPlayerQ
 
 
 class TestMCPlayerQ(TestCase):

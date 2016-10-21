@@ -1,11 +1,6 @@
-from utils import Color, xy2z, cd2p, rc2p, eprint, c_cd2cp
+from utils import Color, cd2p, rc2p, eprint, c_cd2cp
 
-# from collections import deque
-# TODO: method "get_simple_board()" in order to stop using many of the utils like a2p, cd2p, ...
-# TODO: test on 19x19 board: false eye, two eyes
-
-
-# NS is overwriteng in __init__ to be N+1
+# NS is overwritten in __init__ to be N+1
 NS = 19 + 1
 WE = 1
 letter_coord = 'ABCDEFGHJKLMNOPQRST'
@@ -24,10 +19,9 @@ def opposite_color(c):
 
 
 class Board:
-    def __init__(self, N):
+    def __init__(self, N, komi=6.5):
         self.N = N
 
-        # update NS
         global NS
         NS = N + 1
 
@@ -35,20 +29,38 @@ class Board:
                      N * ([Color.BORDER] + [Color.EMPTY for _ in range(N)]) + \
                      [Color.BORDER for _ in range(N + 1)]
         self.ko = None
-        # captured stones
-        self.CS = {'b': 0, 'w': 0}
+
+        self.captures = [0, 0, 0]
+        self.komi = komi
+
         self.history = []
-        self.last_move = None
 
     def copy(self):
         board = Board(self.N)
         board.board = self.board[:]
         board.ko = self.ko
-        board.CS = self.CS
+        board.captures = self.captures
         board.history = self.history
-        board.last_move = self.last_move
 
         return board
+
+    def clear_board(self):
+        N = self.N
+        self.board = [Color.BORDER for _ in range(N + 1)] + \
+                     N * ([Color.BORDER] + [Color.EMPTY for _ in range(N)]) + \
+                     [Color.BORDER for _ in range(N + 1)]
+        self.captures = [0, 0, 0]
+        self.history = []
+
+    def undo(self):
+        """
+        reset history, captures and board to the value of the previous position
+        :return:
+        """
+        temp_history = self.history[:-1]
+        self.clear_board()
+        for c, p in temp_history:
+            self.play(c, p)
 
     def _neighbors(self, p):
         """
@@ -56,7 +68,7 @@ class Board:
         :param p:
         :return:
         """
-        return (p - NS, p + WE, p + NS, p - WE)
+        return p - NS, p + WE, p + NS, p - WE
 
     def _surrounded(self, group):
         color = self.board[group[0]]
@@ -69,14 +81,8 @@ class Board:
     def _get_group(self, p):
         target_color = self.board[p]
 
-        # if target_color != Color.WHITE and target_color != Color.BLACK:
-        #    return []
-
-        # copy board
         temp_board = self.board[:]
 
-        # add p to queue
-        # queue = deque([p])
         queue = [p]
         group = []
         while queue:
@@ -100,14 +106,7 @@ class Board:
         # eprint('group:{}'.format(group))
         return group
 
-        # def _surrounded(self, p):
-
-    #        color = self.board[p]
-
-    # make copy of board and flood fill
-    #        temp_board = self.board[:]
-
-    def play(self, color, p):
+    def play(self, c, p):
 
         if p == self.ko:
             return Error.KO
@@ -116,7 +115,7 @@ class Board:
             return Error.NONEMPTY
 
         # put stone
-        self.board[p] = color
+        self.board[p] = c
 
         # detect if it is single stone autocapture point (for detecting ko)
         # later call again to detect suicide once the opposing color stones are captured.
@@ -125,7 +124,7 @@ class Board:
         if self._surrounded(group) and len(group) == 1:
             one_point_selfcapture = True
 
-        o_color = opposite_color(color)
+        o_color = opposite_color(c)
         possible_ko = []
         # check for each neighbor of oppossite color and mark for capture (if surrounded)
         for nb in self._neighbors(p):
@@ -138,6 +137,7 @@ class Board:
             if self._surrounded(group):
                 for e in group:
                     self.board[e] = Color.EMPTY
+                    self.captures[c] += 1
                 if len(group) == 1 and one_point_selfcapture:
                     possible_ko.append(group[0])
                     # eprint(group)
@@ -154,19 +154,8 @@ class Board:
             # eprint('suicide')
             return Error.SUICIDE
 
-        # #explore if it was captured
-        #     group,liberties = self._get_group_liberties(self.board[:],neighbor,color)
-        #     if not liberties:
-        #         for e in group:
-        #             self.board[e]=Color.EMPTY
-        #
-        #
-        #     temp_board=self._floodfill(neighbor)
-
-        # check for suicide...
-
-        # before the end store last move
-        self.last_move = p
+        # before the end store move in history
+        self.history.append((c, p))
 
         return Error.NOERROR
 
@@ -177,6 +166,7 @@ class Board:
             if verbose:
                 eprint(self)
                 eprint('res:{} ko:{}'.format(res, self.ko))
+                eprint('seq:{}', seq)
         return res
 
     def _group_reach(self, group, color):
@@ -188,32 +178,21 @@ class Board:
                     return True
         return False
 
-        # if self._surrounded(group):
-        #    self.board[p] = Color.EMPTY
-        #    # eprint('suicide')
-        #    return Error.SUICIDE
-
-    def score(self):
+    def tromp_taylor_score(self):
         """
         Score using Tromp-Taylor rules
         :return:
         """
-        # TODO: add captures and komi as arguments
 
         # make a copy of board and color it
         scoring_board = self.board[:]
-        # marked_board = self.board[:]
 
         points = [rc2p(r, c, self.N) for r in range(1, self.N + 1) for c in range(1, self.N + 1)]
-        # eprint(points)
-        # eprint(scoring_board)
+
         for p in points:
             if scoring_board[p] == Color.FILL:
-                # eprint('s_board[p] is Color.FILL')
-                # eprint(scoring_board)
                 continue
-                # if scoring_board[p]==Color.WHITE or scoring_board[p]==Color.BLACK:
-            #                continue
+
             # we only care about empty points for coloring
             if scoring_board[p] == Color.EMPTY:
                 group = self._get_group(p)
@@ -236,18 +215,26 @@ class Board:
 
         return b_points - w_points
 
+    def final_score(self):
+        score = self.tromp_taylor_score()
+        return score - self.komi + self.captures[Color.BLACK] - self.captures[Color.WHITE]
+
     def __str__(self):
         """
             'X' for black, 'O' for white and '.' for empty space
         """
         result = '\n'
 
+        result += 'Black: {} captures | White: {} captures | Komi: {}\n'.format(self.captures[Color.BLACK],
+                                                                                self.captures[Color.WHITE],
+                                                                                self.komi)
         for row in range(1, self.N + 1):
             result += '{:2} '.format(self.N + 1 - row)
             for col in range(1, self.N + 1):
                 p = rc2p(row, col, self.N)
                 color_str = color_string[self.board[p]]
-                if p == self.last_move:
+                # if p is last move
+                if self.history != [] and p == self.history[-1][1]:
                     result = result[:-1]
                     result += '(' + color_str + ')'
                 else:
@@ -256,29 +243,6 @@ class Board:
         result += '   ' + ''.join('{} '.format(c) for c in letter_coord[:self.N])
 
         return result
-
-
-
-        #
-        #     def reset(self):
-        #         self.board = [[None for _ in range(n)] for _ in range(n)]
-        #         self.ko = None
-        #
-        #     def get_available_pos(self):
-        #         # TODO: manage the illegal moves (not empty)
-        #         # TODO: manage the illegal moves (suicide)
-        #         # TODO: manage the illegal moves (ko)
-        #         """ return valid moves....
-        #         :return:
-        #         """
-        #         list_pos = []
-        #         for i in range(self.n):
-        #             for j in range(self.n):
-        #                 if self.board[i][j] is None and self.ko != (i, j):
-        #                     list_pos.append((i, j))
-        #         return list_pos
-        #
-        #
 
 
 def test_play_seq():
@@ -342,12 +306,6 @@ def test_capture():
         eprint(board)
 
 
-        # board.play(Color.BLACK, cd2p('A1', 5))
-        # eprint(board)
-        # board.play(Color.WHITE, cd2p('E5', 5))
-        # eprint(board)
-
-
 def test_nonempty():
     N = 5
     board = Board(N)
@@ -372,7 +330,7 @@ def test_get_group():
     for (c, p) in seq:
         board.play(c, p)
         eprint(board)
-    eprint('HHHHH')
+    # eprint('HHHHH')
 
     group = board._get_group(33)
     eprint('surrounded:{}'.format(board._surrounded(group)))
@@ -381,7 +339,7 @@ def test_get_group():
 
 def test_score():
     board = Board(5)
-    score = board.score()
+    score = board.tromp_taylor_score()
     eprint(board)
     eprint('score:{}'.format(score))
 
@@ -390,7 +348,7 @@ def test_score():
     res = board.play_seq(seq1)
     eprint(board)
     eprint('res:{} ko:{}'.format(res, board.ko))
-    score = board.score()
+    score = board.tromp_taylor_score()
     eprint('score:{}'.format(score))
 
     board = Board(5)
@@ -399,24 +357,130 @@ def test_score():
     res = board.play_seq(seq2)
     eprint(board)
     eprint('res:{} ko:{}'.format(res, board.ko))
-    score = board.score()
+    score = board.tromp_taylor_score()
     eprint('score:{}'.format(score))
 
     board.play_seq(['W C1'])
     eprint(board)
     eprint('res:{} ko:{}'.format(res, board.ko))
-    score = board.score()
+    score = board.tromp_taylor_score()
     eprint('score:{}'.format(score))
 
 
+def test_inf_play(verbose=True):
+    board = Board(9)
+    eprint(board)
+    while True:
+        eprint("Enter move (e.g: 'black A1' or '' for passing): ", end='')
+        mov = raw_input()
+        if mov == '':
+            continue
+        c, p = c_cd2cp(mov, board.N)
+        res = board.play(c, p)
+        if verbose:
+            eprint(board)
+            eprint('res:{} ko:{}'.format(res, board.ko))
+
+
+def test_eyes():
+    board = Board(19)
+    eprint(board)
+    # SETUP
+    seq1 = ['B C4', 'B D5', 'B D3', 'B E4',
+            'W B4', 'W C3', 'W C5', 'W D2', 'W D6', 'W E3', 'W E5', 'W F4']
+    seq2 = ['B C11', 'B D11', 'B E11', 'B F11', 'B G11', 'B C10', 'B E10', 'B G10', 'B C9', 'B D9', 'B E9', 'B F9',
+            'B G9',
+            'W C12', 'W D12', 'W E12', 'W F12', 'W G12', 'W B11', 'W H11', 'W B10', 'W H10', 'W B9', 'W H9', 'W C8',
+            'W D8', 'W E8', 'W F8', 'W G8']
+    seq3 = ['B C17', 'B D17', 'B E17', 'B C16', 'B E16', 'B C15', 'B D15', 'B E15',
+            'W C18', 'W D18', 'W E18', 'W B17', 'W F17', 'W B16', 'W F16', 'W B15', 'W F15', 'W C14', 'W D14', 'W E14']
+    seq4 = ['B R18', 'B S19', 'B S17', 'B T18',
+            'W Q19', 'W Q18', 'W R19', 'W R17', 'W S16', 'W T17', 'W T16']
+    seq5 = ['B R1', 'B R2', 'B S1', 'B S3', 'B T2', 'B T3',
+            'W Q1', 'W Q2', 'W R3', 'W S4', 'W T4']
+    seq = seq1 + seq2 + seq3 + seq4 + seq5
+    res = board.play_seq(seq)
+    eprint(board)
+    eprint('res:{} ko:{}'.format(res, board.ko))
+    score = board.tromp_taylor_score()
+    eprint('score:{}'.format(score))
+
+    seq = ['W D4']
+    res = board.play_seq(seq)
+    eprint(board)
+    eprint('seq:{} res:{} ko:{}'.format(seq, res, board.ko))
+
+    seq = ['W D10']
+    res = board.play_seq(seq)
+    eprint(board)
+    eprint('seq:{} res:{} ko:{}'.format(seq, res, board.ko))
+
+    seq = ['W F10']
+    res = board.play_seq(seq)
+    eprint(board)
+    eprint('seq:{} res:{} ko:{}'.format(seq, res, board.ko))
+
+    seq = ['W D16']
+    res = board.play_seq(seq)
+    eprint(board)
+    eprint('seq:{} res:{} ko:{}'.format(seq, res, board.ko))
+
+    seq = ['W S18']
+    res = board.play_seq(seq)
+    eprint(board)
+    eprint('seq:{} res:{} ko:{}'.format(seq, res, board.ko))
+
+    seq = ['W T19']
+    res = board.play_seq(seq)
+    eprint(board)
+    eprint('seq:{} res:{} ko:{}'.format(seq, res, board.ko))
+
+    seq = ['W S2']
+    res = board.play_seq(seq)
+    eprint(board)
+    eprint('seq:{} res:{} ko:{}'.format(seq, res, board.ko))
+
+    seq = ['W T1']
+    res = board.play_seq(seq)
+    eprint(board)
+    eprint('seq:{} res:{} ko:{}'.format(seq, res, board.ko))
+
+
+def test_undo():
+    board = Board(19)
+    eprint(board)
+    # SETUP
+    seq1 = ['B C4', 'B D5', 'B D3', 'B E4',
+            'W B4', 'W C3', 'W C5', 'W D2', 'W D6', 'W E3', 'W E5', 'W F4']
+    seq2 = ['B C11', 'B D11', 'B E11', 'B F11', 'B G11', 'B C10', 'B E10', 'B G10', 'B C9', 'B D9', 'B E9', 'B F9',
+            'B G9',
+            'W C12', 'W D12', 'W E12', 'W F12', 'W G12', 'W B11', 'W H11', 'W B10', 'W H10', 'W B9', 'W H9', 'W C8',
+            'W D8', 'W E8', 'W F8', 'W G8']
+    seq3 = ['B C17', 'B D17', 'B E17', 'B C16', 'B E16', 'B C15', 'B D15', 'B E15',
+            'W C18', 'W D18', 'W E18', 'W B17', 'W F17', 'W B16', 'W F16', 'W B15', 'W F15', 'W C14', 'W D14', 'W E14']
+    seq4 = ['B R18', 'B S19', 'B S17', 'B T18',
+            'W Q19', 'W Q18', 'W R19', 'W R17', 'W S16', 'W T17', 'W T16']
+    seq5 = ['B R1', 'B R2', 'B S1', 'B S3', 'B T2', 'B T3',
+            'W Q1', 'W Q2', 'W R3', 'W S4', 'W T4']
+    seq = seq1 + seq2 + seq3 + seq4 + seq5
+    res = board.play_seq(seq)
+    eprint(board)
+
+    for i in range(5):
+        board.undo()
+        eprint(board)
+
+
 if __name__ == '__main__':
-    # main()
     # test_init()
     # test_capture()
     # test_suicide()
     # test_play_seq()
     # test_ko()
-    test_score()
+    # test_score()
+    # test_inf_play()
     # test_nonempty()
     # test_get_group()
+    # test_eyes()
+    test_undo()
     # test_str()

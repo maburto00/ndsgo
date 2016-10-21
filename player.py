@@ -1,6 +1,7 @@
+import numpy as np
+
 from board import Board
 from utils import Color, cd2p, a2p, eprint
-import numpy as np
 
 
 class Player:
@@ -19,9 +20,9 @@ class Player:
         self.color = color
         # self.ko = None
 
-    def clear_board(self):
+    def new_game(self):
         # TODO: See gtp draft (maybe we have to reset other things
-        self.board = Board(self.board.N)
+        self.board.clear_board()
         # self.ko = None
 
     def genmove(self, color):

@@ -1,9 +1,6 @@
 from __future__ import print_function
-import sys
 
-# TODO: use new coordinate starting that go from 1 to N instead of 0 to N-1
-# TODO: maybe use only one dimensional coordinates internally to simplify code (not use x,y anymore but only z)
-# TODO: delete unused functions
+import sys
 
 letter_coord = 'ABCDEFGHJKLMNOPQRST'
 
@@ -47,17 +44,6 @@ def rc2p(row, col, N):
     # print('row:{} col:{}'.format(row,col))
     return row * (N + 1) + col
 
-
-def xy2z(x, y, N):
-    """
-    Transform coordinates (x,y) in 2D to a single dimension in row-major order
-    :param x:
-    :param y:
-    :return:
-    """
-    return x + (y - 1) * (N + 1)
-
-
 def a2rc(a, N):
     """
 
@@ -100,19 +86,6 @@ def color2c(color):
         return Color.WHITE
 
 
-def c_cd2cp(s, N):
-    """
-    from 'b A1' to tuple (Color.BLACK, p)
-    :param str:
-    :return:
-    """
-    color, move = s.strip().split()
-    # print('color:{} move:{}'.format(color,move))
-    c = color2c(color)
-    p = cd2p(move, N)
-    return c, p
-
-
 def cd2p(s, N):
     """
     e.g. from A2 in 2x2 board it returns 4 (the position in the array for that position)
@@ -139,6 +112,19 @@ def p2cd(p, N):
     a = p2a(p, N)  # OK
     (r, c) = a2rc(a, N)  # OK
     return rc2cd(r, c, N)
+
+
+def c_cd2cp(s, N):
+    """
+    from 'b A1' to tuple (Color.BLACK, p)
+    :param str:
+    :return:
+    """
+    color, move = s.strip().split()
+    # print('color:{} move:{}'.format(color,move))
+    c = color2c(color)
+    p = cd2p(move, N)
+    return c, p
 
 
 def letter2int(c):

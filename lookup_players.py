@@ -1,18 +1,12 @@
-import numpy as np
-import matplotlib.pyplot as plt
 import time
 
-from utils import eprint, Color, a2p, p2cd
-from player import Player
-
-# TODO: Do a better planning of classes and files (maybe we can put all of the players in the player.py file)
-# TODO: and just put comments like this ############# to separate MC, TD, etc...
-# TODO: Store N table also in order to be able to stop and restart training
+import matplotlib.pyplot as plt
+import numpy as np
 
 from board import Board
+from player import Player
+from utils import eprint, Color, a2p, p2cd
 
-
-# TODO: use our own Board implementation using [Muller 2002] conventions
 
 class MCPlayerQ(Player):
     """
@@ -37,7 +31,6 @@ class MCPlayerQ(Player):
     - a is the action. it is a value from 0 to n*n, where each one indicates a position on the board or passing.
     """
 
-    # TODO: move test methods to test_MCPlayerQ.py
     def __init__(self, board, color, epsilon=0.2, seed=None, verbose=False):
         # TODO: Board should be local, then use method set_board() to change it in case of handicap or something
         Player.__init__(self, board, color)
@@ -65,8 +58,8 @@ class MCPlayerQ(Player):
         # This default values can be changed before calling self_play() to train.
         self.set_QH_parameters(QH_numQ=1000, QH_delta=1)
 
-    def clear_board(self):
-        Player.clear_board(self)
+    def new_game(self):
+        Player.new_game(self)
         self.history = []
 
     def set_QH_parameters(self, QH_numQ, QH_delta):
@@ -219,7 +212,7 @@ class MCPlayerQ(Player):
         :return:
         """
         # TODO: Test this function. Use Debug to see history and board of each match...
-        self.clear_board()
+        self.new_game()
 
         passes = 0
         colors = [Color.BLACK, Color.WHITE]
@@ -261,7 +254,7 @@ class MCPlayerQ(Player):
             # if self.verbose:
 
 
-            score = self.board.score()
+            score = self.board.tromp_taylor_score()
             eprint("score: {} history({}): {}".format(score, len(self.history), self.history))
             if self.verbose:
                 eprint('Match: {} Score: {}'.format(i + 1, score))
@@ -383,7 +376,7 @@ def test_automatch():
     """
     mcPlayer = MCPlayerQ(Board(2), Color.BLACK, epsilon=0.2, seed=2, verbose=False)
     mcPlayer.automatch()
-    score = mcPlayer.board.score()
+    score = mcPlayer.board.tromp_taylor_score()
     eprint('Score: {}'.format(score))
     if score != 0:
         G = score / abs(score)
