@@ -1,17 +1,26 @@
-from utils import cd2xy, p2cd
-from utils import eprint
+from utils import p2cd,eprint,Color,c_cd2cp,color2c
+from lookup_players import MCPlayerQ
+from board import Board
+import sys
 
+player_file=['0','1',
+        '/home/mario/Dropbox/PycharmProjects/ndsgo/saved_param/MC_Q_N2_G1000000_seed2.npy',
+        '/home/mario/Dropbox/PycharmProjects/ndsgo/saved_param/MC_Q_N3_G1000000_seed2.npy',
+        '4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19']
 
 class GtpEngine:
-    def __init__(self, player):
+    def __init__(self, player,verbose=False):
         self.player = player
         self.known_commands = ['protocol_version', 'name', 'version', 'known_command', 'list_commands', 'quit',
-                               'boardsize',
-                               'clear_board', 'komi', 'play', 'genmove']
-        pass
+                               #'boardsize',
+                               'clear_board',
+                               #'komi',
+                               'play', 'genmove']
+        self.verbose = verbose
 
     def gtp_session(self):
-        while True:
+        quit=False
+        while not quit:
             # read and respond
             # read command of the form:
             #   [id] command_name [arguments]\n
@@ -32,7 +41,8 @@ class GtpEngine:
                 id = ''
                 cmd = line_list[0]
                 args = line_list[1:]
-            eprint('line:{} command:{} args:{}'.format(line, cmd, args))
+            if self.verbose:
+                eprint('line:{} command:{} args:{}'.format(line, cmd, args))
 
             # process command and return response of the form:
             #   =[id] result
@@ -47,37 +57,51 @@ class GtpEngine:
                 result = ''
             # elif cmd == 'known_command':
             #     return gtpEn
-            # elif cmd == 'list_commands':
-            #     pass
+            elif cmd == 'list_commands':
+                result=''
+                for e in self.known_commands:
+                    result += e + "\n"
+
             elif cmd == 'quit':
-                break
-            # elif cmd == 'boardsize':
-            #     pass
+                result=''
+                quit = True
+            elif cmd == 'boardsize':
+                if len(args) < 1:
+                    result = 'syntax error'
+                    success = False
+                size = int(args[0])
+                board = Board(size)
+                self.player = MCPlayerQ(board, self.player.color, self.player.epsilon, self.player.verbose)
+                self.player.load_Q(player_file[size])
             elif cmd == 'clear_board':
                 self.player.clear_board()
             # elif cmd == 'komi':
             #     pass
             elif cmd == 'play':
+                # e.g. play black A1
                 if len(args) < 2:
                     result = 'syntax error'
                     success = False
                 else:
-                    color = args[0].lower()
-                    if color == 'black':
-                        color = 'b'
-                    if color == 'white':
-                        color = 'w'
-                    vertex = args[1]
                     try:
-                        (x, y) = cd2xy(vertex,self.player.board.N)
-                        # TODO: raise illegal move exception and handle it (success=False)
+                        #eprint("args:{} a0+a1:{}".format(args,args[0]+' '+args[1]))
+                        (c, p) = c_cd2cp(args[0] + ' ' + args[1], self.player.board.N)
                         # TODO: implement as 'play' in gtp draft.
                         # TODO:   1) update board 2) update captured stones 3) add move to history
                         # TODO: all of this will be made in the board implementation
-                        self.player.play(color, x, y)
-                        result = ''
-                    except(Exception):
-                        # TODO: illegal move exception too.
+                        res = self.player.board.play(c, p)
+                        if self.verbose:
+                            eprint("args:{} c:{} p:{} res:{}".format(args,c,p,res))
+                        if res < 0:
+                            if self.verbose:
+                                eprint("Illegal move in gtp_engine. play. res:{}".format(res))
+                            result = 'illegal move'
+                            success=False
+                        else:
+                            result = ''
+                    except Exception as err:
+                        if self.verbose:
+                            eprint('Exception in gtp_engine.play(). Error:{}'.format(err))
                         success = False
                         result = 'syntax error'
 
@@ -96,11 +120,12 @@ class GtpEngine:
                         success = False
                         result = 'syntax error'
                     else:
-                        mov = self.player.genmove(color)
+                        c=color2c(color)
+                        mov = self.player.genmove(c)
                         if mov is None:
                             result = 'pass'
                         else:
-                            result = p2cd(mov,self.player.board.N)
+                            result = p2cd(mov, self.player.board.N)
             else:
                 result = 'unknown command'
                 success = False
@@ -109,16 +134,14 @@ class GtpEngine:
             #   =[id] result           (SUCCESS)
             #   ?[id] error_message    (FAILURE)
             print('{}{} {}\n'.format('=' if success else '?', id, result))
+            sys.stdout.flush()
 
-
-from lookup_players import MCPlayerQ
-from gomill.boards import Board
 
 
 def main():
     board = Board(3)
-    player = MCPlayerQ(board, 'b', 0.2, None, True)
-    player.load_Q('Q_n3_N1000K.npy')
+    player = MCPlayerQ(board, Color.WHITE, epsilon=0,verbose=True)
+    player.load_Q('/home/mario/Dropbox/PycharmProjects/ndsgo/MC_Q_N3_G1000000_seed2.npy')
     gtp = GtpEngine(player)
     gtp.gtp_session()
 

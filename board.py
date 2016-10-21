@@ -9,7 +9,7 @@ from utils import Color, xy2z, cd2p, rc2p, eprint, c_cd2cp
 NS = 19 + 1
 WE = 1
 letter_coord = 'ABCDEFGHJKLMNOPQRST'
-color_string = '.XOY'
+color_string = '.XO'
 
 
 class Error:
@@ -42,14 +42,13 @@ class Board:
 
     def copy(self):
         board = Board(self.N)
-        board.board=self.board[:]
-        board.ko=self.ko
-        board.CS=self.CS
-        board.history=self.history
-        board.last_move=self.last_move
+        board.board = self.board[:]
+        board.ko = self.ko
+        board.CS = self.CS
+        board.history = self.history
+        board.last_move = self.last_move
 
         return board
-
 
     def _neighbors(self, p):
         """
@@ -70,7 +69,7 @@ class Board:
     def _get_group(self, p):
         target_color = self.board[p]
 
-        #if target_color != Color.WHITE and target_color != Color.BLACK:
+        # if target_color != Color.WHITE and target_color != Color.BLACK:
         #    return []
 
         # copy board
@@ -109,12 +108,6 @@ class Board:
     #        temp_board = self.board[:]
 
     def play(self, color, p):
-        # TODO: capture
-        # TODO: determine ko (and put None if there is no ko)
-        # TODO: disallow suicide (SuicideError)
-        # TODO: Use None instead of exceptions
-
-        error = Error.NOERROR
 
         if p == self.ko:
             return Error.KO
@@ -211,13 +204,13 @@ class Board:
         scoring_board = self.board[:]
         # marked_board = self.board[:]
 
-        points = [rc2p(r, c,self.N) for r in range(1, self.N + 1) for c in range(1, self.N + 1)]
-        #eprint(points)
-        #eprint(scoring_board)
+        points = [rc2p(r, c, self.N) for r in range(1, self.N + 1) for c in range(1, self.N + 1)]
+        # eprint(points)
+        # eprint(scoring_board)
         for p in points:
             if scoring_board[p] == Color.FILL:
-                #eprint('s_board[p] is Color.FILL')
-                #eprint(scoring_board)
+                # eprint('s_board[p] is Color.FILL')
+                # eprint(scoring_board)
                 continue
                 # if scoring_board[p]==Color.WHITE or scoring_board[p]==Color.BLACK:
             #                continue
@@ -387,26 +380,26 @@ def test_get_group():
 
 
 def test_score():
-    board=Board(5)
+    board = Board(5)
     score = board.score()
     eprint(board)
     eprint('score:{}'.format(score))
 
-    seq1=['B C5','B C4','B C3','B C2','B C1',
-          'W D5','W D4','W D3','W D2','W D1',]
-    res=board.play_seq(seq1)
+    seq1 = ['B C5', 'B C4', 'B C3', 'B C2', 'B C1',
+            'W D5', 'W D4', 'W D3', 'W D2', 'W D1', ]
+    res = board.play_seq(seq1)
     eprint(board)
-    eprint('res:{} ko:{}'.format(res,board.ko))
-    score=board.score()
+    eprint('res:{} ko:{}'.format(res, board.ko))
+    score = board.score()
     eprint('score:{}'.format(score))
 
     board = Board(5)
-    seq2=['B B5','B B4','B B3','B B2','B B1',
-          'W D5','W D4','W C3','W C2']
-    res=board.play_seq(seq2)
+    seq2 = ['B B5', 'B B4', 'B B3', 'B B2', 'B B1',
+            'W D5', 'W D4', 'W C3', 'W C2']
+    res = board.play_seq(seq2)
     eprint(board)
-    eprint('res:{} ko:{}'.format(res,board.ko))
-    score=board.score()
+    eprint('res:{} ko:{}'.format(res, board.ko))
+    score = board.score()
     eprint('score:{}'.format(score))
 
     board.play_seq(['W C1'])
@@ -422,7 +415,7 @@ if __name__ == '__main__':
     # test_capture()
     # test_suicide()
     # test_play_seq()
-    #test_ko()
+    # test_ko()
     test_score()
     # test_nonempty()
     # test_get_group()

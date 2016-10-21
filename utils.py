@@ -6,8 +6,6 @@ import sys
 # TODO: delete unused functions
 
 letter_coord = 'ABCDEFGHJKLMNOPQRST'
-color_string = '.XO-!'
-
 
 class Color:
     """
@@ -94,15 +92,9 @@ def rc2cd(r, c, N):
 
 def color2c(color):
     color = color.lower()
-    if color == 'black':
-        color = 'b'
-    if color == 'white':
-        color = 'w'
-
-    if color == 'b':
+    if color == 'black' or color =='b':
         return Color.BLACK
-
-    if color == 'w':
+    if color == 'white' or color=='w':
         return Color.WHITE
 
 
@@ -116,7 +108,7 @@ def c_cd2cp(s, N):
     # print('color:{} move:{}'.format(color,move))
     c = color2c(color)
     p = cd2p(move, N)
-    return (c, p)
+    return c, p
 
 
 def cd2p(s, N):
