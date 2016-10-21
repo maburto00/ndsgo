@@ -4,6 +4,7 @@ from board import Board
 from lookup_players import MCPlayerQ
 from utils import Color
 
+
 class TestGtpEngine(TestCase):
     def setUp(self):
         board = Board(3)
@@ -16,6 +17,5 @@ class TestGtpEngine(TestCase):
 
     def test_known_commands(self):
         pass
-        #for e in self.gtp.known_commands:
+        # for e in self.gtp.known_commands:
         #    self.gtp
-

@@ -113,7 +113,7 @@ class MCPlayerQ(Player):
 
         fig = plt.figure()
         title = 'MC Q history N{} G{} QHnumQ{} seed{}'.format(self.board.N, (num_points - 1) * self.QH_delta,
-                                                               self.QH_numQ, self.seed)
+                                                              self.QH_numQ, self.seed)
         fig.canvas.set_window_title(title)
 
         plt.title('MC Q values')
@@ -413,6 +413,7 @@ def print_random_values():
         for i in range(10):
             eprint("{:>5} {:>20} {:>15}".format(i + 1, list1[i], list2[i]))
 
+
 def test_get_state():
     mcPlayer = MCPlayerQ(Board(2), Color.BLACK, epsilon=0.2, seed=2, verbose=True)
     mcPlayer._get_state(mcPlayer.board)
@@ -424,14 +425,14 @@ if __name__ == '__main__':
     # test_automatch()
     # test_self_play()
 
-    #for i in [10 ** 2, 10 ** 3, 10 ** 4, 10 ** 5, 10 ** 6]:
+    # for i in [10 ** 2, 10 ** 3, 10 ** 4, 10 ** 5, 10 ** 6]:
     #    train_mcplayer(2, i)
 
-    t0=time.time()
-    train_mcplayer(3,10**7)
-    eprint('time to train:{}'.format(time.time()-t0))
-        # play_5_moves()
-        # test_get_state()
-        #play_moves_3x3(20)
-        # train_3x3_mcplayer()
-        # print_random_values()
+    t0 = time.time()
+    train_mcplayer(3, 10 ** 7)
+    eprint('time to train:{}'.format(time.time() - t0))
+    # play_5_moves()
+    # test_get_state()
+    # play_moves_3x3(20)
+    # train_3x3_mcplayer()
+    # print_random_values()

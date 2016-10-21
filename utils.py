@@ -7,6 +7,7 @@ import sys
 
 letter_coord = 'ABCDEFGHJKLMNOPQRST'
 
+
 class Color:
     """
     Use for indices in lists for Board (not for Q tables)
@@ -26,8 +27,9 @@ def a2p(a, N):
     """
     return N + 2 + (a % N) + (a // N) * (N + 1)
 
-def p2a(p,N):
-    return p-N-2-(p-N-2)//(N+1)
+
+def p2a(p, N):
+    return p - N - 2 - (p - N - 2) // (N + 1)
 
 
 def rc2p(row, col, N):
@@ -66,7 +68,7 @@ def a2rc(a, N):
     """
     r = int(a / N)
     c = a % N
-    return (r+1, c+1)
+    return (r + 1, c + 1)
 
 
 def cd2xy(s, N):
@@ -85,16 +87,16 @@ def rc2cd(r, c, N):
     :param N:
     :return:
     """
-    letter = letter_coord[c-1] #OK
-    number = str(N - (r-1))
+    letter = letter_coord[c - 1]  # OK
+    number = str(N - (r - 1))
     return letter + number
 
 
 def color2c(color):
     color = color.lower()
-    if color == 'black' or color =='b':
+    if color == 'black' or color == 'b':
         return Color.BLACK
-    if color == 'white' or color=='w':
+    if color == 'white' or color == 'w':
         return Color.WHITE
 
 
@@ -125,7 +127,8 @@ def cd2p(s, N):
     # print('row:{} col:{}'.format(row,col))
     return col + (N + 1) * row
 
-def p2cd(p,N):
+
+def p2cd(p, N):
     """
     OK
     (board array) position to character-decimal coordinates (A1,B3,...)
@@ -133,8 +136,8 @@ def p2cd(p,N):
     :param N:
     :return:
     """
-    a=p2a(p,N) #OK
-    (r,c)=a2rc(a,N) #OK
+    a = p2a(p, N)  # OK
+    (r, c) = a2rc(a, N)  # OK
     return rc2cd(r, c, N)
 
 

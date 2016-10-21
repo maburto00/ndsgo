@@ -1,6 +1,7 @@
 from board import Board
-from utils import Color, cd2p,a2p,eprint
+from utils import Color, cd2p, a2p, eprint
 import numpy as np
+
 
 class Player:
     """
@@ -16,21 +17,21 @@ class Player:
     def __init__(self, board, color=Color.BLACK):
         self.board = board
         self.color = color
-        #self.ko = None
+        # self.ko = None
 
     def clear_board(self):
-        #TODO: See gtp draft (maybe we have to reset other things
+        # TODO: See gtp draft (maybe we have to reset other things
         self.board = Board(self.board.N)
-        #self.ko = None
+        # self.ko = None
 
     def genmove(self, color):
         return None
 
 
 class RandomPlayer(Player):
-    def genmove(self,color):
-        n =self.board.N
-        ind_actions = np.random.permutation(n*n + 1)
+    def genmove(self, color):
+        n = self.board.N
+        ind_actions = np.random.permutation(n * n + 1)
 
         for a in ind_actions:
             if a == n * n:  # pass move
@@ -42,9 +43,9 @@ class RandomPlayer(Player):
                 continue
 
             else:
-                res = self.board.play(color,mov)
-                if res<0:
-                    #error, so try next action
+                res = self.board.play(color, mov)
+                if res < 0:
+                    # error, so try next action
                     continue
                 else:
                     break
@@ -59,32 +60,34 @@ class HumanPlayer(Player):
         """
         # move_t = input("Enter move (e.g: 0,0 or None for passing): ")
         # TODO: do in while in order to catch exceptions and manage ko
-        eprint("Enter move (e.g: A1 or '' for passing): ",end='')
+        eprint("Enter move (e.g: A1 or '' for passing): ", end='')
         mov = raw_input()
 
         if mov == '':
             return None
 
-        p=cd2p(mov,self.board.N)
-        self.board.play(color,p)
+        p = cd2p(mov, self.board.N)
+        self.board.play(color, p)
 
         return p
 
         # def update_board(p1,p2,mov):
         #   human_player.board.play(mov)
 
+
 def test_random_player():
     board = Board(3)
-    player= RandomPlayer(Board(4), Color.BLACK)
-    colors=[Color.BLACK,Color.WHITE]
+    player = RandomPlayer(Board(4), Color.BLACK)
+    colors = [Color.BLACK, Color.WHITE]
     for i in range(5):
-        color=colors[i%2]
-        p=player.genmove(color)
+        color = colors[i % 2]
+        p = player.genmove(color)
         if p is not None:
-            player.board.play(color,p)
+            player.board.play(color, p)
         else:
             eprint('pass')
         eprint(player.board)
+
 
 def test_human_player():
     board = Board(4)
@@ -96,7 +99,8 @@ def test_human_player():
     eprint(p1.board)
     eprint('res:{}'.format(res))
 
+
 if __name__ == '__main__':
     # main()
-    #test_human_player()
+    # test_human_player()
     test_random_player()
