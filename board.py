@@ -4,7 +4,7 @@ from utils import Color, cd2p, rc2p, eprint, c_cd2cp
 NS = 19 + 1
 WE = 1
 letter_coord = 'ABCDEFGHJKLMNOPQRST'
-color_string = '.XO'
+color_string = 'XO.'
 
 
 class Error:
@@ -30,17 +30,17 @@ class Board:
                      [Color.BORDER for _ in range(N + 1)]
         self.ko = None
 
-        self.captures = [0, 0, 0]
+        self.captures = [0, 0]
         self.komi = komi
 
-        self.history = []
+        self.move_history = []
 
     def copy(self):
         board = Board(self.N)
         board.board = self.board[:]
         board.ko = self.ko
         board.captures = self.captures
-        board.history = self.history
+        board.move_history = self.move_history
 
         return board
 
@@ -49,15 +49,17 @@ class Board:
         self.board = [Color.BORDER for _ in range(N + 1)] + \
                      N * ([Color.BORDER] + [Color.EMPTY for _ in range(N)]) + \
                      [Color.BORDER for _ in range(N + 1)]
-        self.captures = [0, 0, 0]
-        self.history = []
+        self.captures[Color.BLACK] = 0
+        self.captures[Color.WHITE] = 0
+        self.move_history = []
+        self.ko = None
 
     def undo(self):
         """
         reset history, captures and board to the value of the previous position
         :return:
         """
-        temp_history = self.history[:-1]
+        temp_history = self.move_history[:-1]
         self.clear_board()
         for c, p in temp_history:
             self.play(c, p)
@@ -155,7 +157,7 @@ class Board:
             return Error.SUICIDE
 
         # before the end store move in history
-        self.history.append((c, p))
+        self.move_history.append((c, p))
 
         return Error.NOERROR
 
@@ -234,7 +236,7 @@ class Board:
                 p = rc2p(row, col, self.N)
                 color_str = color_string[self.board[p]]
                 # if p is last move
-                if self.history != [] and p == self.history[-1][1]:
+                if self.move_history != [] and p == self.move_history[-1][1]:
                     result = result[:-1]
                     result += '(' + color_str + ')'
                 else:

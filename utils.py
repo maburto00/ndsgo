@@ -3,13 +3,17 @@ from __future__ import print_function
 import sys
 
 letter_coord = 'ABCDEFGHJKLMNOPQRST'
+player_file = ['', '',
+               '/home/mario/Dropbox/PycharmProjects/ndsgo/saved_param/MC_Q_N2_G1000000_seed2.npy',
+               '/home/mario/Dropbox/PycharmProjects/ndsgo/MC_Q_N3_G1000000_seed2_epsilon20.npy',
+               '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
 
 
 class Color:
     """
     Use for indices in lists for Board (not for Q tables)
     """
-    EMPTY, BLACK, WHITE, BORDER, FILL = range(5)
+    BLACK, WHITE, EMPTY, BORDER, FILL = range(5)
     # Empty, Black, White, Border = range(4)
 
 
@@ -43,6 +47,7 @@ def rc2p(row, col, N):
 
     # print('row:{} col:{}'.format(row,col))
     return row * (N + 1) + col
+
 
 def a2rc(a, N):
     """

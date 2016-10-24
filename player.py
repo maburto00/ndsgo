@@ -15,15 +15,11 @@ class Player:
     - ...
     """
 
-    def __init__(self, board, color=Color.BLACK):
-        self.board = board
-        self.color = color
-        # self.ko = None
+    def __init__(self, N):
+        self.board = Board(N)
 
     def new_game(self):
-        # TODO: See gtp draft (maybe we have to reset other things
         self.board.clear_board()
-        # self.ko = None
 
     def genmove(self, color):
         return None
@@ -77,8 +73,7 @@ class HumanPlayer(Player):
 
 
 def test_random_player():
-    board = Board(3)
-    player = RandomPlayer(Board(4), Color.BLACK)
+    player = RandomPlayer(4)
     colors = [Color.BLACK, Color.WHITE]
     for i in range(5):
         color = colors[i % 2]
@@ -91,8 +86,7 @@ def test_random_player():
 
 
 def test_human_player():
-    board = Board(4)
-    p1 = HumanPlayer(Board(4), Color.BLACK)
+    p1 = HumanPlayer(4)
     eprint(p1.board)
     mov = p1.genmove(p1.color)
     eprint('mov:{}'.format(mov))

@@ -8,8 +8,7 @@ from utils import Color
 
 class TestGtpEngine(TestCase):
     def setUp(self):
-        board = Board(3)
-        player = MCPlayerQ(board, Color.WHITE, epsilon=0)
+        player = MCPlayerQ(3)
         player.load_Q('/home/mario/Dropbox/PycharmProjects/ndsgo/MC_Q_N3_G1000000_seed2.npy')
         self.gtp = GtpEngine(player)
 
