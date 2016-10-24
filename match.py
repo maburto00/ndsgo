@@ -21,7 +21,7 @@ class Match:
 
     def update_boards(self, mov, color):
         # print(mov)
-        eprint('mov(p):{} move:{}'.format(mov, p2cd(mov, self.board.N)))
+        # eprint('mov(p):{} move:{}'.format(mov, p2cd(mov, self.board.N)))
 
         res1 = self.board.play(color, mov)
         res2 = self.players[(self.steps) % 2].board.play(color, mov)
@@ -66,16 +66,16 @@ class Match:
         eprint('Score: {}'.format(self.board.tromp_taylor_score()))
 
 
-def test_mcplayer_vs_humanplayer():
+def test_mcplayer_vs_humanplayer(N):
     """
     test against human player
     :return:
     """
-    board = Board(2)
-    p1 = MCPlayerQ(2)
-    p1.load_Q(player_file[2])
-    p2 = HumanPlayer(2)
-    match = Match(2, p1, p2, verbose=True)
+    board = Board(N)
+    p1 = MCPlayerQ(N,epsilon=0)
+    p1.load_Q(player_file[N])
+    p2 = HumanPlayer(N)
+    match = Match(N, p1, p2, verbose=True)
     match.play_match()
 
 
@@ -138,4 +138,4 @@ def test_mc_vs_mc():
 if __name__ == '__main__':
     # test_mc_vs_mc()
     # test_mcplayer_vs_humanplayer()
-    test_mcplayer_vs_humanplayer_3x3()
+    test_mcplayer_vs_humanplayer(2)

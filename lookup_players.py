@@ -1,3 +1,4 @@
+import time
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -6,6 +7,7 @@ from utils import eprint, Color, a2p, p2cd
 
 
 # TODO: use UCB for exploration, because player is too weak because it doesn't explore enough
+
 
 class MCPlayerQ(Player):
     """
@@ -30,8 +32,16 @@ class MCPlayerQ(Player):
     - a is the action. it is a value from 0 to n*n, where each one indicates a position on the board or passing.
     """
 
-    def __init__(self, N, seed=None, epsilon=0.2, verbose=False):
+    def __init__(self, N, seed=None, epsilon=0.2, verbose=False, OI=False):
         Player.__init__(self, N)
+
+        # optimistic initialization
+        self.OI = OI
+
+        self.exploration_algorithm = '_EG'
+        if self.OI:
+            self.exploration_algorithm = '_EG_OI'
+
 
         self.seed = seed
         if seed is not None:
@@ -39,12 +49,16 @@ class MCPlayerQ(Player):
         self.verbose = verbose
 
         # See description of Q in the comments of the class
-        Q_SHAPE = (2,) \
+        self.Q_SHAPE = (2,) \
                   + tuple([3 for i in range(N * N)]) \
                   + (N * N + 1,)
-        self.MC_Q = np.zeros(Q_SHAPE)
-        # self.Q = np.random.random(Q_SHAPE)
-        self.MC_N = np.zeros(Q_SHAPE)
+        self.MC_Q = np.zeros(self.Q_SHAPE)
+        self.MC_N = np.zeros(self.Q_SHAPE)
+
+
+        if self.OI:
+            self.MC_Q = np.ones(self.Q_SHAPE)
+            self.MC_Q[Color.WHITE] *= -1
 
         self.episode_history = []
         self.epsilon = epsilon
@@ -54,6 +68,8 @@ class MCPlayerQ(Player):
 
         # This default values can be changed before calling self_play() to train.
         self.set_QH_parameters(QH_numQ=1000, QH_delta=1)
+
+        self.training_time = 0
 
     def new_game(self):
         Player.new_game(self)
@@ -101,9 +117,11 @@ class MCPlayerQ(Player):
         # In t=0 we have the initial values, then we have the values stored from update_Q()
         t = [0] + [i * self.QH_delta + 1 for i in range(num_points - 1)]
 
+
+
         fig = plt.figure()
-        title = 'MC_Q_N{}_G{}_seed{}_epsilon_{}_QHnumQ{}'.format(self.board.N, (num_points - 1) * self.QH_delta,
-                                                      self.seed, int(self.epsilon*100), self.QH_numQ)
+        title = 'MC_Q{}_N{}_G{}_seed{}_epsilon_{}_QHnumQ{}_time{}'.format(self.exploration_algorithm, self.board.N, (num_points - 1) * self.QH_delta,
+                                                      self.seed, int(self.epsilon*100), self.QH_numQ, int(self.training_time))
         fig.canvas.set_window_title(title)
 
         plt.title('MC Q values')
@@ -114,7 +132,7 @@ class MCPlayerQ(Player):
             plt.plot(t, self.QH[i], 'k-')
 
         plt.savefig(title)
-        plt.show()
+        # plt.show()
 
     def _get_state(self, board_list):
         """
@@ -230,9 +248,14 @@ class MCPlayerQ(Player):
         :param num_games:
         :return:
         """
+        # we print 100 times the status of the program
+        times_to_print=num_games/100
         for i in range(num_games):
-            # if self.verbose:
-            eprint("i: {}, {} elements {} B {} KB {} MB {} GB".format(i,
+            self.automatch()
+            score = self.board.tromp_taylor_score()
+
+            if i % times_to_print==0:
+                eprint("i: {}, {} elements {} B {} KB {} MB {} GB".format(i,
                                                                       len(self.QH) * self.episodes,
                                                                       len(self.QH) * self.episodes * 8,
                                                                       len(self.QH) * self.episodes * 8 / 1024,
@@ -240,9 +263,8 @@ class MCPlayerQ(Player):
                                                                           1024 * 1024),
                                                                       len(self.QH) * self.episodes * 8 / (
                                                                           1024 * 1024 * 1024)))
-            self.automatch()
-            score = self.board.tromp_taylor_score()
-            eprint("score: {} history({}): {}".format(score, len(self.episode_history), self.episode_history))
+                eprint("score: {} history({}): {}".format(score, len(self.episode_history), self.episode_history))
+
             if self.verbose:
                 eprint('Match: {} Score: {}'.format(i + 1, score))
             if score != 0:
@@ -250,12 +272,13 @@ class MCPlayerQ(Player):
             self.update_Q(G)
 
 
-def train_mcplayer(N=2, num_games=1000000, seed=None, epsilon=0.2, verbose=False):
+
+def train_mcplayer(N=2, num_games=1000000, seed=None, epsilon=0.2, verbose=False,OI=False):
     """
     Play num_games games of self play on a 2x2 board and update Q values
     Then save the Q values on a file and then plot the Q values and save as an image.
     """
-    mcPlayer = MCPlayerQ(N, seed=seed, epsilon=epsilon,verbose=verbose)
+    mcPlayer = MCPlayerQ(N, seed=seed, epsilon=epsilon,verbose=verbose, OI=OI)
 
     episodes_to_plot = 1000
     QH_delta = num_games // episodes_to_plot
@@ -263,9 +286,14 @@ def train_mcplayer(N=2, num_games=1000000, seed=None, epsilon=0.2, verbose=False
         QH_delta = 1
 
     mcPlayer.set_QH_parameters(QH_numQ=1000, QH_delta=QH_delta)
-    mcPlayer.self_play(num_games)
 
-    file_name = 'MC_Q_N{}_G{}_seed{}_epsilon{}.npy'.format(N, num_games, seed,int(epsilon*100))
+    t0 = time.time()
+    mcPlayer.self_play(num_games)
+    mcPlayer.training_time = time.time() - t0
+
+
+    file_name = 'MC_Q{}_N{}_G{}_seed{}_epsilon{}_time{}.npy'.format(mcPlayer.exploration_algorithm, N, num_games, seed,
+                                                                    int(epsilon*100), int(mcPlayer.training_time))
     eprint('e2plot:{} Qdelta:{} file:{} '.format(episodes_to_plot, QH_delta, file_name))
     mcPlayer.save_Q(file_name)
 
@@ -402,8 +430,9 @@ if __name__ == '__main__':
 
     #train_mcplayer(2, 10, seed=2, epsilon=0.8, verbose=True)
 
-    for i in [10 ** 2, 10 ** 3, 10 ** 4, 10 ** 5, 10 ** 6]:
-       train_mcplayer(3, i, seed=2, epsilon=0.2,verbose=False)
+    # for i in [10 ** 2, 10 ** 3, 10 ** 4, 10 ** 5, 10 ** 6]:
+    for i in [10 ** 7]:
+        train_mcplayer(3, i, seed=2, epsilon=0.5,verbose=False,OI=True)
 
     # t0 = time.time()
     # train_mcplayer(3, 10 ** 7)

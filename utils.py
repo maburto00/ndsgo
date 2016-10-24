@@ -4,7 +4,7 @@ import sys
 
 letter_coord = 'ABCDEFGHJKLMNOPQRST'
 player_file = ['', '',
-               '/home/mario/Dropbox/PycharmProjects/ndsgo/saved_param/MC_Q_N2_G1000000_seed2.npy',
+               '/home/mario/Dropbox/PycharmProjects/ndsgo/MC_Q_EG_N2_G1000000_seed2_epsilon50_time629.npy',
                '/home/mario/Dropbox/PycharmProjects/ndsgo/MC_Q_N3_G1000000_seed2_epsilon20.npy',
                '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
 
