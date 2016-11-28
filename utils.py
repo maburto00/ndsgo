@@ -3,18 +3,36 @@ from __future__ import print_function
 import sys
 
 letter_coord = 'ABCDEFGHJKLMNOPQRST'
+sgf_coord = 'abcdefghijklmnopqrs'
 player_file = ['', '',
                '/home/mario/Dropbox/PycharmProjects/ndsgo/MC_Q_EG_N2_G1000000_seed2_epsilon50_time629.npy',
                '/home/mario/Dropbox/PycharmProjects/ndsgo/MC_Q_N3_G1000000_seed2_epsilon20.npy',
                '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
 
 
+
+
 class Color:
     """
     Use for indices in lists for Board (not for Q tables)
     """
-    BLACK, WHITE, EMPTY, BORDER, FILL = range(5)
     # Empty, Black, White, Border = range(4)
+    BLACK, WHITE, EMPTY, BORDER, FILL = range(5)
+
+def sgfxy2p(s, N):
+    """
+    the coordinatesw in sgf go from a to s and represent and xy coordinate system with origin at the top left
+    so we have to convert to p.
+    :param a:
+    :param N:
+    :return:
+    """
+    x = sgf_coord.index(s[0])
+    y = sgf_coord.index(s[1])
+
+    p = rc2p(y + 1, x + 1, N)
+    #print('x:{} y:{} p:{}'.format(x, y,p))
+    return p
 
 
 def a2p(a, N):
@@ -143,3 +161,4 @@ def letter2int(c):
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
+

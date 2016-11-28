@@ -1,4 +1,4 @@
-from utils import Color, cd2p, rc2p, eprint, c_cd2cp
+from utils import Color, cd2p, rc2p, eprint, c_cd2cp,p2a
 
 # NS is overwritten in __init__ to be N+1
 NS = 19 + 1
@@ -107,6 +107,69 @@ class Board:
         # eprint(temp_board)
         # eprint('group:{}'.format(group))
         return group
+
+    def create_register(self, player_color, p):
+        """
+        from board position and next move, create training example in byte form
+        # <label 1byte><board position features size*size*num_features bytes>
+        :return:
+        """
+        # features 1,2,3: Player stone/opponent stone/empty
+        # feature 4: all ones
+
+        #here we define the number of feature layers that our input will have
+        self.num_features = 4
+
+        if player_color == Color.BLACK:
+            opp_color = Color.WHITE
+        else:
+            opp_color = Color.BLACK
+
+        N = self.N
+        player_stone = [0 for i in range(N*N)]
+        opp_stone = [0 for i in range(N*N)]
+        empty_stone = [0 for i in range(N*N)]
+        all_ones = [1 for i in range(N*N)]
+
+        i = 0
+
+        for r in range(1, N + 1):
+            for c in range(1, N + 1):
+                if self.board[rc2p(r, c, N)] == player_color:
+                    player_stone[i] = 1
+                elif self.board[rc2p(r, c, N)] == opp_color:
+                    opp_stone[i] = 1
+                elif self.board[rc2p(r, c, N)] == Color.EMPTY:
+                    empty_stone[i] = 1
+                i += 1
+        #eprint(player_stone)
+        #eprint(opp_stone)
+        #eprint(empty_stone)
+
+
+
+        # append the first four features
+        feature_planes = player_stone + opp_stone + empty_stone + all_ones
+
+
+        move_label = p2a(p, self.N)
+
+
+        # <label 2 bytes><board position features size*size*num_features bytes>
+        register_array = [move_label/ 256, move_label % 256]+ feature_planes
+
+        # to acces the int formed by two bytes use:
+        #       struct.unpack('>h', bytearray([0, 1]))[0]
+
+        register_bytes = bytearray(register_array)
+        return register_bytes
+
+    def add_black_handicap_stone(self,p):
+        """
+        for handicap games, doesn't update history, or manage captures, etc.
+        :return:
+        """
+        self.board[p] = Color.BLACK
 
     def play(self, c, p):
 
@@ -472,6 +535,19 @@ def test_undo():
         board.undo()
         eprint(board)
 
+def test_reg():
+    board = Board(3)
+    seq = ['B B2', 'W B3', 'B C1']
+    res = board.play_seq(seq)
+    eprint(board)
+    #next move W C3
+    p=cd2p('C3',board.N)
+    eprint(p)
+    reg=board.create_register(Color.WHITE,p)
+    eprint('len reg:{}'.format(len(reg)))
+    eprint(reg)
+    eprint(reg[0])
+    eprint(reg[1])
 
 if __name__ == '__main__':
     # test_init()
@@ -484,5 +560,6 @@ if __name__ == '__main__':
     # test_nonempty()
     # test_get_group()
     # test_eyes()
-    test_undo()
+    # test_undo()
+    test_reg()
     # test_str()

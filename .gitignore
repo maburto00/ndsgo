@@ -7,3 +7,10 @@
 
 !/saved_param/*.npy
 !/saved_param/*.png
+
+*.gz
+*.bin
+*.sgf
+
+cifar10/*
+mnist/*
