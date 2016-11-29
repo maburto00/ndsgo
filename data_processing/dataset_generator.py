@@ -1,7 +1,7 @@
 # PARAMETERS: path to the folder containing the sgf files
 # GENERATE: a file containing the shuffled dataset
 #           a file containing some meta-data (boardsize, numberofplanes,numberofregisters)
-from board import Board
+from board import Board, NUM_CHANNELS
 import os
 import utils
 from utils import Color, sgfxy2p, color2c, eprint
@@ -9,16 +9,15 @@ import numpy as np
 import random
 import struct
 import gzip
+import time
 
 DEFAULT_SIZE = 9
-
 
 def get_property_value(property, sgf_properties, start_index=0):
     property_pos = sgf_properties.find(property)
     s = sgf_properties.find('[', property_pos)
     f = sgf_properties.find(']', property_pos)
     return sgf_properties[s + 1:f]
-
 
 def get_property_multiple_values(property, sgf_properties, start_index=0):
     property_pos = sgf_properties.find(property)
@@ -34,17 +33,16 @@ def get_property_multiple_values(property, sgf_properties, start_index=0):
             break
     return values
 
+def process_game(fullpath_fn, boardsize):
 
-def process_game(fullpath_fn):
-    f = open(fullpath_fn)
-    sgf_data = f.read()
-    f.close()
+    with open(fullpath_fn) as f:
+        sgf_data = f.read()
 
     # remove all white space
     sgf_data.replace(' ', '')
 
     split_data = sgf_data.split(';')
-    print(split_data)
+    #print(split_data)
 
     sgf_properties = split_data[1]
     sgf_moves = split_data[2:]
@@ -52,13 +50,17 @@ def process_game(fullpath_fn):
     # GET SIZE
     if 'SZ' in sgf_properties:
         try:
-            size = int(get_property_value('SZ', sgf_properties))
-        except:
-            print('error converting size property to int')
-    else:
-        size = DEFAULT_SIZE
+            sgf_size = int(get_property_value('SZ', sgf_properties))
+            if sgf_size != boardsize:
+                print('sizes differ in {}. sgf_size:{} dataset_boardsize:{}'.format(fullpath_fn, sgf_size, boardsize))
+                return 0,''
 
-    #print('SIZE:{}'.format(size))
+        except:
+            print('error converting size property to int. file:{}'.format(fullpath_fn))
+            return 0,''
+
+    size = boardsize
+
     # initialize board
     board = Board(size)
 
@@ -82,6 +84,7 @@ def process_game(fullpath_fn):
                 except:
                     print('except while putting handicap stones')
                     print('xy:{} ab_values:{} fn:{}'.format(xy,ab_values,fullpath_fn))
+                    exit()
                 # index_ab = sgf_data.find('AB', index_ab + 1)
                 # print(board)
 
@@ -93,19 +96,19 @@ def process_game(fullpath_fn):
     num_reg = 0
     for move in sgf_moves:
         # get colors and positions
-        print(move)
+        #print(move)
         try:
             color = move[0].lower()
             c = color2c(color)
             xy = move[move.find('[') + 1:move.find(']')]
             if xy == '':
-                print('PASS MOVE. filename:{}'.format(fullpath_fn))
+                print('PASS MOVE. move:{} filename:{}'.format(move,fullpath_fn))
                 continue
             p = sgfxy2p(xy, size)
 
             # first, store current position and predicted move as a register
             reg = board.create_register(c, p)
-            print('len of reg:{}'.format(len(reg)))
+            #print('len of reg:{}'.format(len(reg)))
 
             # write to file or append to something and then write
             game_registers += reg
@@ -121,11 +124,7 @@ def process_game(fullpath_fn):
     return num_reg, game_registers
 
 
-def generate_dataset(dirname):
-    # iterate over the files in directory
-    print(dirname)
-
-    # we will store the dataset in this file
+def generate_bin_dataset(dirname,boardsize):
     f = open(dirname + '.bin', 'wb')
 
     total_num_reg = 0
@@ -136,43 +135,54 @@ def generate_dataset(dirname):
     i = 0
     for fn in files:
         i += 1
-        (num_reg, reg) = process_game(dirname + '/' + fn)
+        (num_reg, reg) = process_game(dirname + '/' + fn,boardsize)
         f.write(reg)
         total_num_reg += num_reg
+        print('{}/{} games processed. BIN FILE.'.format(i,total_files))
 
-        print('{}/{} processed'.format(i,total_files))
-
-        # print(data)
     f.close()
 
     g = open(dirname + '.prop', 'w')
     g.write('{} registers\n'.format(total_num_reg))
+    g.write('{} channels\n'.format(NUM_CHANNELS))
+    g.write('{} rows'.format(9))
+    g.write('{} columns'.format(9))
     g.close()
     return total_num_reg
 
 
 def generate_idx_dataset9(dirname):
-    generate_idx_dataset(dirname,9,4)
+    generate_idx_dataset(dirname,9)
 
 def generate_idx_dataset19(dirname):
-    generate_idx_dataset(dirname,19,4)
+    generate_idx_dataset(dirname,19)
 
-def generate_idx_dataset(dirname,board_size,num_channels):
+def generate_idx_dataset(dirname,boardsize):
     # iterate over the files in directory
     print(dirname)
 
-    VECTOR_SIZE = board_size*board_size*num_channels
+    VECTOR_SIZE = boardsize*boardsize*NUM_CHANNELS
     LABEL_SIZE = 2
     EXAMPLE_SIZE = VECTOR_SIZE + LABEL_SIZE
 
     # we will store the dataset in this file
     # f=open(dirname+'.bin','wb')
 
+    total_time=0
+    start_time = time.time()
 
-    num_examples = generate_dataset(dirname)
+    num_examples = generate_bin_dataset(dirname,boardsize)
+    elapsed_time=time.time()-start_time
+    start_time=time.time()
+    total_time+=elapsed_time
+    print('bin file created. Time to create {} s'.format(elapsed_time))
 
     # shuffle and get num_exmaples
-    shuffle_dataset(dirname + '.bin')
+    shuffle_dataset(dirname + '.bin',boardsize)
+    elapsed_time = time.time() - start_time
+    start_time = time.time()
+    total_time += elapsed_time
+    print('shuffled bin file created. Time to create {} s'.format(elapsed_time))
 
     index = int(num_examples * .85)
     num_train_examples = index
@@ -186,14 +196,14 @@ def generate_idx_dataset(dirname,board_size,num_channels):
     magic_number_labels = bytearray([0, 0, 11, 1])
 
     header_train_vectors = magic_number_vectors + struct.pack('>I', num_train_examples) \
-                           + struct.pack('>I', num_channels) \
-                           + struct.pack('>I', board_size) \
-                           + struct.pack('>I', board_size)
+                           + struct.pack('>I', NUM_CHANNELS) \
+                           + struct.pack('>I', boardsize) \
+                           + struct.pack('>I', boardsize)
 
     header_test_vectors = magic_number_vectors + struct.pack('>I', num_test_examples) \
-                          + struct.pack('>I', num_channels) \
-                          + struct.pack('>I', board_size) \
-                          + struct.pack('>I', board_size)
+                          + struct.pack('>I', NUM_CHANNELS) \
+                          + struct.pack('>I', boardsize) \
+                          + struct.pack('>I', boardsize)
 
     header_train_labels = magic_number_labels + struct.pack('>I', num_train_examples)
     header_test_labels = magic_number_labels + struct.pack('>I', num_test_examples)
@@ -210,7 +220,8 @@ def generate_idx_dataset(dirname,board_size,num_channels):
 
     # write data
     i = 0
-    for line in records_from_file('shuffled_' + dirname + '.bin'):
+    print_interval=int(num_examples/100)
+    for line in records_from_file('shuffled_' + dirname + '.bin',boardsize):
         if i < index:
             train_labels.write(line[0:2])
             train_vectors.write(line[2:])
@@ -218,11 +229,18 @@ def generate_idx_dataset(dirname,board_size,num_channels):
             test_labels.write(line[0:2])
             test_vectors.write(line[2:])
         i += 1
+        if (i-1) % print_interval==0 or i==num_examples:
+            print('{}/{} lines processed. GZ FILE'.format(i,num_examples))
+
 
     train_vectors.close()
     test_vectors.close()
     train_labels.close()
     test_labels.close()
+    elapsed_time = time.time() - start_time
+    total_time += elapsed_time
+    print('gz file created. Time to create {} s'.format(elapsed_time))
+    print('Total time {} s'.format(total_time))
 
 
 def find_games_with_property(dirname, property):
@@ -234,7 +252,8 @@ def find_games_with_property(dirname, property):
             print(fn)
 
 
-def records_from_file(filename, chunksize=81 * 4 + 2):
+def records_from_file(filename, boardsize):
+    chunksize=boardsize*boardsize*NUM_CHANNELS+2
     with open(filename, "rb") as f:
         while True:
             chunk = f.read(chunksize)
@@ -244,7 +263,7 @@ def records_from_file(filename, chunksize=81 * 4 + 2):
                 break
 
 
-def shuffle_dataset(filename):
+def shuffle_dataset(filename,boardsize):
     """
     shuffles the examples inside the file
     also, returns the number of examples in the file
@@ -252,7 +271,7 @@ def shuffle_dataset(filename):
 
     # f=open(filename,'r')
     lines = []
-    for line in records_from_file(filename):
+    for line in records_from_file(filename,boardsize):
         # print(line)
         lines.append(line)
 
@@ -264,24 +283,15 @@ def shuffle_dataset(filename):
         lines[i] = lines[r]
         lines[r] = temp
     f = open('shuffled_' + filename, 'wb')
+
+
     for line in lines:
         f.write(line)
     f.close()
 
     return len(lines)
 
-
-# def separate_dataset_train_test(fn):
-
-
-
-
-
 if __name__ == '__main__':
-    # dirname = '9x9_10games'
-    # fn=''
-    # dirname = 'gogod_9x9_games'
-    # dirname = 'KGS2001'
     # find_handicap_games(dirname)
     # process_game('2001-12-08-3.sgf')
     # generate_dataset('9x9_10games')
@@ -290,18 +300,7 @@ if __name__ == '__main__':
     # generate_idx_dataset_9x9('9x9_10games')
 
     #generate_idx_dataset9('gogod_9x9_games')
-    generate_idx_dataset9('9x9_10games')
-    #generate_idx_dataset19('KGS2001')
-
-# separate_dataset_train_test('9x9_10games.bin')
-
-
-
-
-# generate_dataset('KGS2001')
-
-# find_games_with_property('KGS2001', 'AB')
-# print(get_property_value('HA','FF[00]HA[22]BA[33]'))
-# print(get_property_multiple_values('AB', 'FF[00]HA[22]AB[cc][dd][ee]'))
-
-# generate_dataset(dirname)
+    #generate_idx_dataset9('9x9_10games')
+    generate_idx_dataset19('KGS2001')
+    #generate_idx_dataset19('KGS_10games')
+    #generate_idx_dataset19('KGS_100games')

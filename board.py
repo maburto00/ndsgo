@@ -6,6 +6,7 @@ WE = 1
 letter_coord = 'ABCDEFGHJKLMNOPQRST'
 color_string = 'XO.'
 
+NUM_CHANNELS = 4  #used in dataset_generator
 
 class Error:
     SUICIDE, KO, NONEMPTY, NOERROR = [-3, -2, -1, 0]
@@ -118,7 +119,7 @@ class Board:
         # feature 4: all ones
 
         #here we define the number of feature layers that our input will have
-        self.num_features = 4
+
 
         if player_color == Color.BLACK:
             opp_color = Color.WHITE

@@ -35,13 +35,13 @@ from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 IMAGE_SIZE = 9
-NUM_CHANNELS = 4
 NUM_LABELS = IMAGE_SIZE * IMAGE_SIZE
+NUM_CHANNELS = 4
 NUM_FILTERS = 32 #use 64,128,....
-VALIDATION_SIZE = 5000  # Size of the validation set.
+#VALIDATION_SIZE = 5000  # Size of the validation set.
 SEED = 66478  # Set to None for random seed.
 BATCH_SIZE = 64
-NUM_EPOCHS = 10
+NUM_EPOCHS = 10000
 EVAL_BATCH_SIZE = 64
 EVAL_FREQUENCY = 10  # Number of steps between evaluations.
 
@@ -75,11 +75,17 @@ def extract_data(filename):
         NUM_CHANNELS = struct.unpack('>I',bytestream.read(4))[0]  #
         global IMAGE_SIZE
         IMAGE_SIZE = struct.unpack('>I',bytestream.read(4))[0]
+        global NUM_LABELS
+        NUM_LABELS = IMAGE_SIZE * IMAGE_SIZE
         bytestream.read(4)  # it is the IMAGE SIZE AGAIN
 
         # bytestream.read(16)
         buf = bytestream.read(num_images * NUM_CHANNELS * IMAGE_SIZE * IMAGE_SIZE)
         data = numpy.frombuffer(buf, dtype=numpy.uint8)
+        print('buf len {} data len:{} IMAGE_SIZE:{} NUM_CHANNESL:{}'.format(len(buf),
+                                                                            len(data),IMAGE_SIZE,NUM_CHANNELS))
+
+
         # data = (data - (PIXEL_DEPTH / 2.0)) / PIXEL_DEPTH
 
         # TODO: verify that the order is correct. See next example taken from cifar10_input
@@ -105,7 +111,6 @@ def extract_labels(filename):
         dt = numpy.dtype(numpy.uint16)
         dt = dt.newbyteorder('>')
         labels = numpy.frombuffer(buf, dtype=dt)
-
 
     return labels
 
@@ -142,6 +147,7 @@ def main(argv=None):  # pylint: disable=unused-argument
     # Get the data.
     #filename='9x9_10games'
     filename = 'gogod_9x9_games'
+    #filename = 'KGS2001'
     train_data_filename = filename + '-train-vectors-idx4-ubyte.gz'
     train_labels_filename = filename + '-train-labels-idx1-ubyte.gz'
     test_data_filename = filename + '-test-vectors-idx4-ubyte.gz'
@@ -185,25 +191,9 @@ def main(argv=None):  # pylint: disable=unused-argument
                             seed=SEED, dtype=data_type()))
     conv1_biases = tf.Variable(tf.zeros([32], dtype=data_type()))
     conv2_weights = tf.Variable(tf.truncated_normal(
-        [3, 3, 32, 32], stddev=0.1,
+        [1, 1, 32, 1], stddev=0.1,
         seed=SEED, dtype=data_type()))
-    conv2_biases = tf.Variable(tf.constant(0.1, shape=[32], dtype=data_type()))
-    fc1_weights = tf.Variable(  # fully connected, depth 512.
-        #tf.truncated_normal([IMAGE_SIZE // 4 * IMAGE_SIZE // 4 * 64, 512],
-        tf.truncated_normal([IMAGE_SIZE * IMAGE_SIZE * 32, 512],
-        #tf.truncated_normal([IMAGE_SIZE  * IMAGE_SIZE * 64, 512],
-                            stddev=0.1,
-                            seed=SEED,
-                            dtype=data_type()))
-    #fc1_biases = tf.Variable(tf.constant(0.1, shape=[512], dtype=data_type()))
-    fc1_biases = tf.Variable(tf.constant(0.1, shape=[512], dtype=data_type()))
-    #fc2_weights = tf.Variable(tf.truncated_normal([512, NUM_LABELS],
-    fc2_weights = tf.Variable(tf.truncated_normal([512, NUM_LABELS],
-                                                  stddev=0.1,
-                                                  seed=SEED,
-                                                  dtype=data_type()))
-    fc2_biases = tf.Variable(tf.constant(
-        0.1, shape=[NUM_LABELS], dtype=data_type()))
+    conv2_biases = tf.Variable(tf.constant(0.1, shape=[IMAGE_SIZE*IMAGE_SIZE], dtype=data_type()))
 
     # We will replicate the model structure for the training subgraph, as well
     # as the evaluation subgraphs, while sharing the trainable parameters.
@@ -224,22 +214,22 @@ def main(argv=None):  # pylint: disable=unused-argument
                             conv2_weights,
                             strides=[1, 1, 1, 1],
                             padding='SAME')
-        relu = tf.nn.relu(tf.nn.bias_add(conv, conv2_biases))
+        #relu = tf.nn.relu(tf.nn.bias_add(conv, conv2_biases))
 
         # Reshape the feature map cuboid into a 2D matrix to feed it to the
         # fully connected layers.
-        relu_shape = relu.get_shape().as_list()
+        conv_shape = conv.get_shape().as_list()
         reshape = tf.reshape(
-            relu,
-            [relu_shape[0], relu_shape[1] * relu_shape[2] * relu_shape[3]])
+            conv,
+            [conv_shape[0], conv_shape[1] * conv_shape[2] * conv_shape[3]])
         # Fully connected layer. Note that the '+' operation automatically
         # broadcasts the biases.
-        hidden = tf.nn.relu(tf.matmul(reshape, fc1_weights) + fc1_biases)
+        hidden = tf.nn.relu(reshape + conv2_biases)
         # Add a 50% dropout during training only. Dropout also scales
         # activations such that no rescaling is needed at evaluation time.
-        if train:
-            hidden = tf.nn.dropout(hidden, 0.5, seed=SEED)
-        return tf.matmul(hidden, fc2_weights) + fc2_biases
+        #if train:
+            #hidden = tf.nn.dropout(hidden, 0.5, seed=SEED)
+        return hidden
 
     # Training computation: logits + cross-entropy loss.
     logits = model(train_data_node, True)
@@ -247,31 +237,35 @@ def main(argv=None):  # pylint: disable=unused-argument
         logits, train_labels_node))
 
     # L2 regularization for the fully connected parameters.
-    regularizers = (tf.nn.l2_loss(fc1_weights) + tf.nn.l2_loss(fc1_biases) +
-                    tf.nn.l2_loss(fc2_weights) + tf.nn.l2_loss(fc2_biases))
+    #regularizers = (tf.nn.l2_loss(fc1_weights) + tf.nn.l2_loss(fc1_biases) +
+     #               tf.nn.l2_loss(fc2_weights) + tf.nn.l2_loss(fc2_biases))
     # Add the regularization term to the loss.
-    loss += 5e-4 * regularizers
+    #loss += 5e-4 * regularizers
 
     # Optimizer: set up a variable that's incremented once per batch and
     # controls the learning rate decay.
     batch = tf.Variable(0, dtype=data_type())
     # Decay once per epoch, using an exponential schedule starting at 0.01.
+
     learning_rate = tf.train.exponential_decay(
-        0.01,  # Base learning rate.
+        0.1,  # Base learning rate.
         batch * BATCH_SIZE,  # Current index into the dataset.
         train_size,  # Decay step.
         0.95,  # Decay rate.
         staircase=True)
     # Use simple momentum for the optimization.
-    optimizer = tf.train.MomentumOptimizer(learning_rate,
-                                           0.9).minimize(loss,
-                                                         global_step=batch)
+    #optimizer = tf.train.MomentumOptimizer(learning_rate,
+     #                                      0.9).minimize(loss,
+      #                                                   global_step=batch)
+    optimizer=tf.train.GradientDescentOptimizer(learning_rate).minimize(loss,global_step=batch)
 
     # Predictions for the current training minibatch.
     train_prediction = tf.nn.softmax(logits)
 
     # Predictions for the test and validation, which we'll compute less often.
     eval_prediction = tf.nn.softmax(model(eval_data))
+
+    saver = tf.train.Saver(tf.all_variables())
 
     # Small utility function to evaluate a dataset by feeding batches of data to
     # {eval_data} and pulling the results from {eval_predictions}.
@@ -300,6 +294,7 @@ def main(argv=None):  # pylint: disable=unused-argument
     with tf.Session() as sess:
         # Run all the initializers to prepare the trainable parameters.
         tf.initialize_all_variables().run()
+
         print('Initialized!')
         # Loop through training steps.
         for step in xrange(int(num_epochs * train_size) // BATCH_SIZE):
@@ -327,6 +322,14 @@ def main(argv=None):  # pylint: disable=unused-argument
                 print('Validation error: %.1f%%' % error_rate(
                     eval_in_batches(validation_data, sess), validation_labels))
                 sys.stdout.flush()
+                # Save the model checkpoint periodically.
+            if step % EVAL_FREQUENCY*10 == 0:
+                checkpoint_path = os.path.join('','model.ckpt')
+                saver.save(sess, checkpoint_path, global_step=step)
+        #save final parameters
+        checkpoint_path = os.path.join('', 'model.ckpt')
+        saver.save(sess, checkpoint_path, global_step=step)
+
         # Finally print the result!
         test_error = error_rate(eval_in_batches(test_data, sess), test_labels)
         print('Test error: %.1f%%' % test_error)

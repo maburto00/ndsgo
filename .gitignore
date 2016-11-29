@@ -14,3 +14,7 @@
 
 cifar10/*
 mnist/*
+*.prop
+*.meta
+*.ckpt*
+checkpoint
