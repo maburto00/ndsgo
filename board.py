@@ -1,4 +1,6 @@
 from utils import Color, cd2p, rc2p, eprint, c_cd2cp,p2a
+import utils
+import struct
 
 # NS is overwritten in __init__ to be N+1
 NS = 19 + 1
@@ -11,12 +13,6 @@ NUM_CHANNELS = 4  #used in dataset_generator
 class Error:
     SUICIDE, KO, NONEMPTY, NOERROR = [-3, -2, -1, 0]
 
-
-def opposite_color(c):
-    if c == Color.WHITE:
-        return Color.BLACK
-    elif c == Color.BLACK:
-        return Color.WHITE
 
 
 class Board:
@@ -35,6 +31,13 @@ class Board:
         self.komi = komi
 
         self.move_history = []
+
+    @staticmethod
+    def opposite_color(c):
+        if c == Color.WHITE:
+            return Color.BLACK
+        elif c == Color.BLACK:
+            return Color.WHITE
 
     def copy(self):
         board = Board(self.N)
@@ -109,6 +112,39 @@ class Board:
         # eprint('group:{}'.format(group))
         return group
 
+    @staticmethod
+    def get_board_and_move_from_register_str(N, register_str, player_color):
+        """
+        :param register_str:
+        :return: (board,a)
+        """
+        if player_color == Color.BLACK:
+            opp_color = Color.WHITE
+        else:
+            opp_color = Color.BLACK
+
+
+        register_array=[e for e in bytearray(register_str)]
+        a=struct.unpack('<h',register_str[:2])[0]
+        vector_array=register_array[2:]
+        #eprint(vector_array)
+        #eprint(len(vector_array))
+        board=Board(N)
+        i = 0
+        for r in range(1, N + 1):
+            for c in range(1, N + 1):
+                if vector_array[i]==1:
+                    board.board[utils.rc2p(r,c,N)] = player_color
+                i += 1
+
+        for r in range(1, N + 1):
+            for c in range(1, N + 1):
+                if vector_array[i]==1:
+                    board.board[utils.rc2p(r,c,N)]=opp_color
+                i += 1
+        return board,a
+
+
     def create_register(self, player_color, p):
         """
         from board position and next move, create training example in byte form
@@ -157,8 +193,12 @@ class Board:
 
 
         # <label 2 bytes><board position features size*size*num_features bytes>
-        register_array = [move_label/ 256, move_label % 256]+ feature_planes
 
+        # Big Endian
+        #register_array = [move_label/ 256, move_label % 256]+ feature_planes
+
+        # little-endian
+        register_array = [move_label % 256, move_label / 256] + feature_planes
         # to acces the int formed by two bytes use:
         #       struct.unpack('>h', bytearray([0, 1]))[0]
 
@@ -190,7 +230,7 @@ class Board:
         if self._surrounded(group) and len(group) == 1:
             one_point_selfcapture = True
 
-        o_color = opposite_color(c)
+        o_color = Board.opposite_color(c)
         possible_ko = []
         # check for each neighbor of oppossite color and mark for capture (if surrounded)
         for nb in self._neighbors(p):
@@ -537,7 +577,8 @@ def test_undo():
         eprint(board)
 
 def test_reg():
-    board = Board(3)
+    N=3
+    board = Board(N)
     seq = ['B B2', 'W B3', 'B C1']
     res = board.play_seq(seq)
     eprint(board)
@@ -550,17 +591,26 @@ def test_reg():
     eprint(reg[0])
     eprint(reg[1])
 
+    board2,a=Board.get_board_and_move_from_register_str(N, str(reg), Color.WHITE)
+    eprint(board2)
+    eprint(utils.p2cd(utils.a2p(a,N),N))
+    board2.play(Color.WHITE,utils.a2p(a,N))
+    eprint(board2)
+
 if __name__ == '__main__':
     # test_init()
     # test_capture()
     # test_suicide()
-    # test_play_seq()
-    # test_ko()
+    #test_play_seq()
+    test_ko()
     # test_score()
     # test_inf_play()
     # test_nonempty()
     # test_get_group()
     # test_eyes()
     # test_undo()
-    test_reg()
+    # test_reg()
+
     # test_str()
+
+

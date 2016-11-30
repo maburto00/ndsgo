@@ -45,10 +45,11 @@ from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 # from tensorflow.models.image.cifar10 import cifar10
+import cnn
 
 FLAGS = tf.app.flags.FLAGS
 
-tf.app.flags.DEFINE_string('train_dir', '/tmp/ndsgo_train',
+tf.app.flags.DEFINE_string('train_dir', 'cnn_train',
                            """Directory where to write event logs """
                            """and checkpoint.""")
 tf.app.flags.DEFINE_integer('max_steps', 1000000,
@@ -63,18 +64,20 @@ def train():
         global_step = tf.Variable(0, trainable=False)
 
         # Get images and labels for CIFAR-10.
-        images, labels = cnn.distorted_inputs()
+        images, labels = cnn.distorted_inputs(NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN,
+                                              IMAGE_SIZE,
+                                              NUM_CHANNELS)
 
         # Build a Graph that computes the logits predictions from the
         # inference model.
-        logits = cifar10.inference(images)
+        logits = cnn.inference(images,IMAGE_SIZE,NUM_CHANNELS)
 
         # Calculate loss.
-        loss = cifar10.loss(logits, labels)
+        loss = cnn.loss(logits, labels)
 
         # Build a Graph that trains the model with one batch of examples and
         # updates the model parameters.
-        train_op = cifar10.train(loss, global_step)
+        train_op = cnn.train(loss, global_step)
 
         # Create a saver.
         saver = tf.train.Saver(tf.all_variables())
@@ -121,12 +124,43 @@ def train():
                 checkpoint_path = os.path.join(FLAGS.train_dir, 'model.ckpt')
                 saver.save(sess, checkpoint_path, global_step=step)
 
+def read_properties_file():
+    with open(FLAGS.data_dir+'/'+FLAGS.data_dir+'.prop','r') as f:
+        num_examples=[int(c) for c in f.readline().strip().split(',')]
+        train_num_examples=sum(num_examples[:-1])
+        test_num_examples=int(num_examples[-1])
+        num_channels=int(f.readline().strip())
+        boardsize=int(f.readline().strip())
+
+        global IMAGE_SIZE
+        IMAGE_SIZE=boardsize
+
+        global NUM_CHANNELS
+        NUM_CHANNELS=num_channels
+
+        global NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN
+        NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN=train_num_examples
+
+        global NUM_EXAMPLES_PER_EPOCH_FOR_EVAL
+        NUM_EXAMPLES_PER_EPOCH_FOR_EVAL=test_num_examples
+
+        #print(sizes,num_channels,boardsize)
+        tf.app.flags.DEFINE_integer('NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN',
+                                    train_num_examples,"""train examples.""")
+        tf.app.flags.DEFINE_integer('NUM_EXAMPLES_PER_EPOCH_FOR_EVAL',
+                                    train_num_examples,"""test examples.""")
+        tf.app.flags.DEFINE_integer('IMAGE_SIZE',boardsize,"""image size""")
+
 
 def main(argv=None):  # pylint: disable=unused-argument
-    cifar10.maybe_download_and_extract()
     if tf.gfile.Exists(FLAGS.train_dir):
         tf.gfile.DeleteRecursively(FLAGS.train_dir)
     tf.gfile.MakeDirs(FLAGS.train_dir)
+
+    read_properties_file()
+    #num_examples_train=
+    #num_examples_test=
+
     train()
 
 

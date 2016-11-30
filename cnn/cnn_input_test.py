@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Tests for cifar10 input."""
+"""Tests for cnn input."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,10 +23,11 @@ import os
 
 import tensorflow as tf
 
-from tensorflow.models.image.cifar10 import cifar10_input
+#from tensorflow.models.image.cnn import cnn_input
+from cnn import cnn_input
 
 
-class CIFAR10InputTest(tf.test.TestCase):
+class CNNInputTest(tf.test.TestCase):
 
   def _record(self, label, red, green, blue):
     image_size = 32 * 32
@@ -42,14 +43,14 @@ class CIFAR10InputTest(tf.test.TestCase):
                self._record(labels[2], 254, 255, 0)]
     contents = b"".join([record for record, _ in records])
     expected = [expected for _, expected in records]
-    filename = os.path.join(self.get_temp_dir(), "cifar")
+    filename = os.path.join(self.get_temp_dir(), "cnn")
     open(filename, "wb").write(contents)
 
     with self.test_session() as sess:
       q = tf.FIFOQueue(99, [tf.string], shapes=())
       q.enqueue([filename]).run()
       q.close().run()
-      result = cifar10_input.read_cifar10(q)
+      result = cnn_input.read_data(q)
 
       for i in range(3):
         key, label, uint8image = sess.run([

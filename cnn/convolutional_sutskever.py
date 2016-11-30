@@ -267,6 +267,7 @@ def main(argv=None):  # pylint: disable=unused-argument
 
     saver = tf.train.Saver(tf.all_variables())
 
+
     # Small utility function to evaluate a dataset by feeding batches of data to
     # {eval_data} and pulling the results from {eval_predictions}.
     # Saves memory and enables this to run on smaller GPUs.
@@ -294,6 +295,7 @@ def main(argv=None):  # pylint: disable=unused-argument
     with tf.Session() as sess:
         # Run all the initializers to prepare the trainable parameters.
         tf.initialize_all_variables().run()
+#        saver.restore(sess,'model.ckpt-77100')
 
         print('Initialized!')
         # Loop through training steps.

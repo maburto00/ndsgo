@@ -1,3 +1,20 @@
+# Copyright 2015 The TensorFlow Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
+"""Routine for decoding the CIFAR-10 binary file format."""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -7,23 +24,22 @@ import os
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
-
-
-# Process computer go boards fo size N*N
-
 # Process images of this size. Note that this differs from the original CIFAR
 # image size of 32 x 32. If one alters this number, then the entire model
 # architecture will change and any model would need to be retrained.
-BOARD_SIZE = 9
+#IMAGE_SIZE = 24
+IMAGE_SIZE = 9
+NUM_CHANNELS = 4
 
-# Global constants describing the dataset (
-# IN THIS CASE WE USE 9x9_10games.bin dataset (506 registers in total)
-NUM_CLASSES = BOARD_SIZE*BOARD_SIZE
-NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 406
-NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = 100
+# Global constants describing the CIFAR-10 data set.
+NUM_CLASSES = IMAGE_SIZE*IMAGE_SIZE
+
+# TODO: determine the number to assign here
+NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 50000
+NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = 10000
 
 
-def read_board9(filename_queue):
+def read_data(filename_queue,boardsize,num_channels):
   """Reads and parses examples from CIFAR10 data files.
 
   Recommendation: if you want N-way read parallelism, call this function
@@ -45,17 +61,17 @@ def read_board9(filename_queue):
       uint8image: a [height, width, depth] uint8 Tensor with the image data
   """
 
-  class Board9Record(object):
+  class Record(object):
     pass
-  result = Board9Record()
+  result = Record()
 
   # Dimensions of the images in the CIFAR-10 dataset.
   # See http://www.cs.toronto.edu/~kriz/cifar.html for a description of the
   # input format.
   label_bytes = 2  # 2 for CIFAR-100
-  result.height = 9
-  result.width = 9
-  result.depth = 4
+  result.height = boardsize
+  result.width = boardsize
+  result.depth = num_channels
   image_bytes = result.height * result.width * result.depth
   # Every record consists of a label followed by the image, with a
   # fixed number of bytes for each.
@@ -69,10 +85,12 @@ def read_board9(filename_queue):
 
   # Convert from a string to a vector of uint8 that is record_bytes long.
   record_bytes = tf.decode_raw(value, tf.uint8)
-
   # The first bytes represent the label, which we convert from uint8->int32.
-  result.label = tf.cast(
-      tf.slice(record_bytes, [0], [label_bytes]), tf.int32)
+   # The first bytes represent the label, which we convert from uint8->int32.
+  #result.label = tf.cast(tf.slice(record_bytes, [0], [label_bytes]), tf.int32)
+  shorts=tf.decode_raw(value,tf.int16)
+  result.label = tf.cast(tf.slice(shorts,[0],[1]), tf.int32)
+  #result.label = tf.cast(tf.decode_raw(tf.slice(value,[0],[label_bytes]),tf.uint16),tf.int32)
 
   # The remaining bytes after the label represent the image, which we reshape
   # from [depth * height * width] to [depth, height, width].
@@ -84,7 +102,7 @@ def read_board9(filename_queue):
   return result
 
 
-def _generate_board_and_label_batch(board, label, min_queue_examples,
+def _generate_image_and_label_batch(image, label, min_queue_examples,
                                     batch_size, shuffle):
   """Construct a queued batch of images and labels.
 
@@ -104,26 +122,26 @@ def _generate_board_and_label_batch(board, label, min_queue_examples,
   # read 'batch_size' images + labels from the example queue.
   num_preprocess_threads = 16
   if shuffle:
-    boards, label_batch = tf.train.shuffle_batch(
-        [board, label],
+    images, label_batch = tf.train.shuffle_batch(
+        [image, label],
         batch_size=batch_size,
         num_threads=num_preprocess_threads,
         capacity=min_queue_examples + 3 * batch_size,
         min_after_dequeue=min_queue_examples)
   else:
-    boards, label_batch = tf.train.batch(
-        [board, label],
+    images, label_batch = tf.train.batch(
+        [image, label],
         batch_size=batch_size,
         num_threads=num_preprocess_threads,
         capacity=min_queue_examples + 3 * batch_size)
 
   # Display the training images in the visualizer.
-  tf.image_summary('boards', boards)
+  tf.image_summary('images', images)
 
-  return boards, tf.reshape(label_batch, [batch_size])
+  return images, tf.reshape(label_batch, [batch_size])
 
 
-def distorted_inputs(data_dir, batch_size):
+def distorted_inputs(data_dir, batch_size, train_num_examples, boardsize, num_channels):
   """Construct distorted input for CIFAR training using the Reader ops.
 
   Args:
@@ -134,9 +152,8 @@ def distorted_inputs(data_dir, batch_size):
     images: Images. 4D tensor of [batch_size, IMAGE_SIZE, IMAGE_SIZE, 3] size.
     labels: Labels. 1D tensor of [batch_size] size.
   """
-  #filenames = [os.path.join(data_dir, 'data_batch_%d.bin' % i)
-   #            for i in xrange(1, 6)]
-  filenames=['9x9_10games.bin']
+  filenames = [os.path.join(data_dir, data_dir+'_%d.bin' % i)
+               for i in xrange(1, 6)]
   for f in filenames:
     if not tf.gfile.Exists(f):
       raise ValueError('Failed to find file: ' + f)
@@ -145,15 +162,16 @@ def distorted_inputs(data_dir, batch_size):
   filename_queue = tf.train.string_input_producer(filenames)
 
   # Read examples from files in the filename queue.
-  read_input = read_board9(filename_queue)
-  reshaped_image = tf.cast(read_input.uint8image, tf.float32)
+  read_input = read_data(filename_queue,boardsize,num_channels)
+  reshaped_image = read_input.uint8image
 
-  height = BOARD_SIZE
-  width = BOARD_SIZE
+  height = boardsize
+  width = boardsize
 
   # Image processing for training the network. Note the many random
   # distortions applied to the image.
 
+  distorted_image = tf.cast(tf.reshape(reshaped_image,[height,width,num_channels]),tf.float32)
   # Randomly crop a [height, width] section of the image.
   #distorted_image = tf.random_crop(reshaped_image, [height, width, 3])
 
@@ -162,25 +180,28 @@ def distorted_inputs(data_dir, batch_size):
 
   # Because these operations are not commutative, consider randomizing
   # the order their operation.
-  #distorted_image = tf.image.random_brightness(distorted_image,max_delta=63)
-  #distorted_image = tf.image.random_contrast(distorted_image,lower=0.2, upper=1.8)
+  #distorted_image = tf.image.random_brightness(distorted_image,
+   #                                            max_delta=63)
+  #distorted_image = tf.image.random_contrast(distorted_image,
+    #                                         lower=0.2, upper=1.8)
 
   # Subtract off the mean and divide by the variance of the pixels.
-  #float_image = tf.image.per_image_whitening(reshaped_image)
+  #float_image = tf.image.per_image_whitening(distorted_image)
 
   # Ensure that the random shuffling has good mixing properties.
   min_fraction_of_examples_in_queue = 0.4
-  min_queue_examples = int(NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN *min_fraction_of_examples_in_queue)
-  print ('Filling queue with %d CIFAR images before starting to train. '
+  min_queue_examples = int(min(train_num_examples*
+                           min_fraction_of_examples_in_queue,20000))
+  print ('Filling queue with %d images before starting to train. '
          'This will take a few minutes.' % min_queue_examples)
 
   # Generate a batch of images and labels by building up a queue of examples.
-  return _generate_board_and_label_batch(reshaped_image, read_input.label,
+  return _generate_image_and_label_batch(distorted_image, read_input.label,
                                          min_queue_examples, batch_size,
                                          shuffle=True)
 
 
-def inputs(eval_data, data_dir, batch_size):
+def inputs(eval_data, data_dir, filename, batch_size,train_num_examples,test_num_examples,boardsize,num_channels):
   """Construct input for CIFAR evaluation using the Reader ops.
 
   Args:
@@ -193,12 +214,12 @@ def inputs(eval_data, data_dir, batch_size):
     labels: Labels. 1D tensor of [batch_size] size.
   """
   if not eval_data:
-    filenames = [os.path.join(data_dir, 'data_batch_%d.bin' % i)
+    filenames = [os.path.join(data_dir, data_dir+'_%d.bin' % i)
                  for i in xrange(1, 6)]
-    num_examples_per_epoch = NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN
+    num_examples_per_epoch = train_num_examples
   else:
-    filenames = [os.path.join(data_dir, 'test_batch.bin')]
-    num_examples_per_epoch = NUM_EXAMPLES_PER_EPOCH_FOR_EVAL
+    filenames = [os.path.join(data_dir, data_dir+'_test_batch.bin')]
+    num_examples_per_epoch = test_num_examples
 
   for f in filenames:
     if not tf.gfile.Exists(f):
@@ -208,11 +229,11 @@ def inputs(eval_data, data_dir, batch_size):
   filename_queue = tf.train.string_input_producer(filenames)
 
   # Read examples from files in the filename queue.
-  read_input = read_board9(filename_queue)
+  read_input = read_data(filename_queue,boardsize,num_channels)
   reshaped_image = tf.cast(read_input.uint8image, tf.float32)
 
-  height = BOARD_SIZE
-  width = BOARD_SIZE
+  height = IMAGE_SIZE
+  width = IMAGE_SIZE
 
   # Image processing for evaluation.
   # Crop the central [height, width] of the image.
@@ -220,7 +241,7 @@ def inputs(eval_data, data_dir, batch_size):
                                                          width, height)
 
   # Subtract off the mean and divide by the variance of the pixels.
-  #float_image = tf.image.per_image_whitening(resized_image)
+  float_image = tf.image.per_image_whitening(resized_image)
 
   # Ensure that the random shuffling has good mixing properties.
   min_fraction_of_examples_in_queue = 0.4
@@ -228,6 +249,6 @@ def inputs(eval_data, data_dir, batch_size):
                            min_fraction_of_examples_in_queue)
 
   # Generate a batch of images and labels by building up a queue of examples.
-  return _generate_board_and_label_batch(resized_image, read_input.label,
+  return _generate_image_and_label_batch(float_image, read_input.label,
                                          min_queue_examples, batch_size,
                                          shuffle=False)

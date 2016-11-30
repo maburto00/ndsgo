@@ -17,7 +17,7 @@
 
 Accuracy:
 cnn_train.py achieves 83.0% accuracy after 100K steps (256 epochs
-of data) as judged by cnn_eval.py.
+of data) as judged by cifar10_eval.py.
 
 Speed:
 On a single Tesla K40, cnn_train.py processes a single batch of 128 images

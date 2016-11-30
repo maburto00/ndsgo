@@ -18,3 +18,4 @@ mnist/*
 *.meta
 *.ckpt*
 checkpoint
+cnn/cnn_train/*

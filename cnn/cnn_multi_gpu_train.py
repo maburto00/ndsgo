@@ -47,11 +47,12 @@ import time
 import numpy as np
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
-from tensorflow.models.image.cifar10 import cifar10
+#from tensorflow.models.image.cnn import cnn
+from cnn import cnn
 
 FLAGS = tf.app.flags.FLAGS
 
-tf.app.flags.DEFINE_string('train_dir', '/tmp/cifar10_train',
+tf.app.flags.DEFINE_string('train_dir', '/tmp/cnn_train',
                            """Directory where to write event logs """
                            """and checkpoint.""")
 tf.app.flags.DEFINE_integer('max_steps', 1000000,
@@ -72,14 +73,14 @@ def tower_loss(scope):
      Tensor of shape [] containing the total loss for a batch of data
   """
   # Get images and labels for CIFAR-10.
-  images, labels = cifar10.distorted_inputs()
+  images, labels = cnn.distorted_inputs()
 
   # Build inference Graph.
-  logits = cifar10.inference(images)
+  logits = cnn.inference(images)
 
   # Build the portion of the Graph calculating the losses. Note that we will
   # assemble the total_loss using a custom function below.
-  _ = cifar10.loss(logits, labels)
+  _ = cnn.loss(logits, labels)
 
   # Assemble all of the losses for the current tower only.
   losses = tf.get_collection('losses', scope)
@@ -96,7 +97,7 @@ def tower_loss(scope):
   for l in losses + [total_loss]:
     # Remove 'tower_[0-9]/' from the name in case this is a multi-GPU training
     # session. This helps the clarity of presentation on tensorboard.
-    loss_name = re.sub('%s_[0-9]*/' % cifar10.TOWER_NAME, '', l.op.name)
+    loss_name = re.sub('%s_[0-9]*/' % cnn.TOWER_NAME, '', l.op.name)
     # Name each loss as '(raw)' and name the moving average version of the loss
     # as the original loss name.
     tf.scalar_summary(loss_name +' (raw)', l)
@@ -155,15 +156,15 @@ def train():
         initializer=tf.constant_initializer(0), trainable=False)
 
     # Calculate the learning rate schedule.
-    num_batches_per_epoch = (cifar10.NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN /
+    num_batches_per_epoch = (cnn.NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN /
                              FLAGS.batch_size)
-    decay_steps = int(num_batches_per_epoch * cifar10.NUM_EPOCHS_PER_DECAY)
+    decay_steps = int(num_batches_per_epoch * cnn.NUM_EPOCHS_PER_DECAY)
 
     # Decay the learning rate exponentially based on the number of steps.
-    lr = tf.train.exponential_decay(cifar10.INITIAL_LEARNING_RATE,
+    lr = tf.train.exponential_decay(cnn.INITIAL_LEARNING_RATE,
                                     global_step,
                                     decay_steps,
-                                    cifar10.LEARNING_RATE_DECAY_FACTOR,
+                                    cnn.LEARNING_RATE_DECAY_FACTOR,
                                     staircase=True)
 
     # Create an optimizer that performs gradient descent.
@@ -173,7 +174,7 @@ def train():
     tower_grads = []
     for i in xrange(FLAGS.num_gpus):
       with tf.device('/gpu:%d' % i):
-        with tf.name_scope('%s_%d' % (cifar10.TOWER_NAME, i)) as scope:
+        with tf.name_scope('%s_%d' % (cnn.TOWER_NAME, i)) as scope:
           # Calculate the loss for one tower of the CIFAR model. This function
           # constructs the entire CIFAR model but shares the variables across
           # all towers.
@@ -213,7 +214,7 @@ def train():
 
     # Track the moving averages of all trainable variables.
     variable_averages = tf.train.ExponentialMovingAverage(
-        cifar10.MOVING_AVERAGE_DECAY, global_step)
+        cnn.MOVING_AVERAGE_DECAY, global_step)
     variables_averages_op = variable_averages.apply(tf.trainable_variables())
 
     # Group all updates to into a single train op.
@@ -269,7 +270,7 @@ def train():
 
 
 def main(argv=None):  # pylint: disable=unused-argument
-  cifar10.maybe_download_and_extract()
+  cnn.maybe_download_and_extract()
   if tf.gfile.Exists(FLAGS.train_dir):
     tf.gfile.DeleteRecursively(FLAGS.train_dir)
   tf.gfile.MakeDirs(FLAGS.train_dir)

@@ -12,6 +12,8 @@ import gzip
 import time
 
 DEFAULT_SIZE = 9
+LABEL_SIZE=2
+
 
 def get_property_value(property, sgf_properties, start_index=0):
     property_pos = sgf_properties.find(property)
@@ -142,12 +144,7 @@ def generate_bin_dataset(dirname,boardsize):
 
     f.close()
 
-    g = open(dirname + '.prop', 'w')
-    g.write('{} registers\n'.format(total_num_reg))
-    g.write('{} channels\n'.format(NUM_CHANNELS))
-    g.write('{} rows'.format(9))
-    g.write('{} columns'.format(9))
-    g.close()
+
     return total_num_reg
 
 
@@ -162,7 +159,7 @@ def generate_idx_dataset(dirname,boardsize):
     print(dirname)
 
     VECTOR_SIZE = boardsize*boardsize*NUM_CHANNELS
-    LABEL_SIZE = 2
+
     EXAMPLE_SIZE = VECTOR_SIZE + LABEL_SIZE
 
     # we will store the dataset in this file
@@ -178,11 +175,29 @@ def generate_idx_dataset(dirname,boardsize):
     print('bin file created. Time to create {} s'.format(elapsed_time))
 
     # shuffle and get num_exmaples
-    shuffle_dataset(dirname + '.bin',boardsize)
+    shuffle_dataset(dirname ,boardsize)
     elapsed_time = time.time() - start_time
     start_time = time.time()
     total_time += elapsed_time
     print('shuffled bin file created. Time to create {} s'.format(elapsed_time))
+
+    # 5 separate bin files
+    num_examples_each_file=separate_dataset(dirname,boardsize,num_examples,5)
+
+    #generate prop file
+    g = open(dirname + '.prop', 'w')
+    for i in range(len(num_examples_each_file)):
+        if i==len(num_examples_each_file)-1:
+            g.write(str(num_examples_each_file[i]) +'\n')
+        else:
+            g.write(str(num_examples_each_file[i]) +',')
+
+    g.write('{}\n'.format(NUM_CHANNELS))
+    g.write('{}\n'.format(boardsize))
+    g.write('{}\n'.format(boardsize))
+    g.close()
+
+
 
     index = int(num_examples * .85)
     num_train_examples = index
@@ -223,11 +238,11 @@ def generate_idx_dataset(dirname,boardsize):
     print_interval=int(num_examples/100)
     for line in records_from_file('shuffled_' + dirname + '.bin',boardsize):
         if i < index:
-            train_labels.write(line[0:2])
-            train_vectors.write(line[2:])
+            train_labels.write(line[0:LABEL_SIZE])
+            train_vectors.write(line[LABEL_SIZE:])
         else:
-            test_labels.write(line[0:2])
-            test_vectors.write(line[2:])
+            test_labels.write(line[0:LABEL_SIZE])
+            test_vectors.write(line[LABEL_SIZE:])
         i += 1
         if (i-1) % print_interval==0 or i==num_examples:
             print('{}/{} lines processed. GZ FILE'.format(i,num_examples))
@@ -253,7 +268,7 @@ def find_games_with_property(dirname, property):
 
 
 def records_from_file(filename, boardsize):
-    chunksize=boardsize*boardsize*NUM_CHANNELS+2
+    chunksize=boardsize*boardsize*NUM_CHANNELS+LABEL_SIZE
     with open(filename, "rb") as f:
         while True:
             chunk = f.read(chunksize)
@@ -262,16 +277,37 @@ def records_from_file(filename, boardsize):
             else:
                 break
 
+def separate_dataset(dirname,boardsize,num_examples, num_sep):
 
-def shuffle_dataset(filename,boardsize):
+    #we sum +1 since there will be a test set also
+    interval_sep = num_examples / (num_sep+1) + 1
+
+    chunksize = boardsize * boardsize * NUM_CHANNELS + LABEL_SIZE
+    f=open('shuffled_'+dirname+'.bin','rb')
+    filenames=[dirname+'_{}.bin'.format(i+1) for i in range(num_sep)]
+    filenames.append(dirname+'_test_batch.bin')
+    num_examples_each_file=[0 for _ in range(num_sep+1)]
+    for i in range(num_sep+1):
+
+        with open(filenames[i],'wb') as g:
+            for j in range(interval_sep):
+                chunk=f.read(chunksize)
+                if chunk:
+                    g.write(chunk)
+                    num_examples_each_file[i] += 1
+                else:
+                    break
+
+    return num_examples_each_file
+def shuffle_dataset(dirname,boardsize):
     """
     shuffles the examples inside the file
     also, returns the number of examples in the file
     in order to use it in generate_idx_dataset()"""
-
+    # TODO: do efficient memory shuffling, we don't need to read everything to memory
     # f=open(filename,'r')
     lines = []
-    for line in records_from_file(filename,boardsize):
+    for line in records_from_file(dirname+'.bin',boardsize):
         # print(line)
         lines.append(line)
 
@@ -282,7 +318,7 @@ def shuffle_dataset(filename,boardsize):
         temp = lines[i]
         lines[i] = lines[r]
         lines[r] = temp
-    f = open('shuffled_' + filename, 'wb')
+    f = open('shuffled_' + dirname +'.bin', 'wb')
 
 
     for line in lines:
@@ -301,6 +337,6 @@ if __name__ == '__main__':
 
     #generate_idx_dataset9('gogod_9x9_games')
     #generate_idx_dataset9('9x9_10games')
-    generate_idx_dataset19('KGS2001')
-    #generate_idx_dataset19('KGS_10games')
+    #generate_idx_dataset19('KGS2001')
+    generate_idx_dataset19('KGS_10games')
     #generate_idx_dataset19('KGS_100games')
