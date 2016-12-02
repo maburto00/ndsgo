@@ -2,14 +2,17 @@ import sys
 
 from board import Board
 from lookup_players import MCPlayerQ
-from utils import p2cd, eprint, Color, c_cd2cp, color2c,player_file
-
+from utils import p2cd, eprint, Color, c_cd2cp, color2c
+from param_players import CNNPlayer
 
 
 class GtpEngine:
-    def __init__(self, player, verbose=False):
-        self.player = player
+    def __init__(self, N,Player_class, verbose=False):
+        self.Player_class=Player_class
+        self.player = self.Player_class(N)
         self.verbose = verbose
+        self.last_move_pass = False #Used to finish the game when the other player passes
+
 
         # commented commands are not implemented yet
         self.administrative_commands = ['protocol_version', 'name', 'version', 'known_command', 'list_commands', 'quit']
@@ -20,7 +23,7 @@ class GtpEngine:
                                    'undo',
                                    ]
         self.tournament_commands = [  # 'time_settings', 'time_left',
-            'final_score',
+            #'final_score',
             # 'final_status_list'
         ]
         self.reggression_commands = [  # 'load_sgf', 'reg_genmove'
@@ -99,9 +102,18 @@ class GtpEngine:
                 else:
                     try:
                         size = int(args[0])
-                        if player_file[size] != '':
-                            self.player = MCPlayerQ(size)
-                            self.player.load_Q(player_file[size])
+
+                        if self.player.player_file.has_key(size):
+                            if self.Player_class is CNNPlayer:
+                                #success = False
+                                #result = 'unacceptable size'
+                                #eprint('Cannot change size because this is not implmeneted for CNNPlayer. '
+                                #       'It would cause an error')
+                                success=True
+
+                            elif self.Player_class is MCPlayerQ:
+                                self.player = self.Player_class(size)
+                                self.player.load_Q(self.player.player_file[size])
                         else:
                             success = False
                             result = 'unacceptable size'
@@ -132,49 +144,63 @@ class GtpEngine:
 
             elif cmd == 'play':
                 # e.g. play black A1
+
                 if len(args) < 2:
                     result = 'syntax error'
                     success = False
                 else:
-                    try:
-                        (c, p) = c_cd2cp(args[0] + ' ' + args[1], self.player.board.N)
-                        res = self.player.board.play(c, p)
-                        if self.verbose:
-                            eprint("args:{} c:{} p:{} res:{}".format(args, c, p, res))
-                        if res < 0:
+                    eprint('IN PLAY: {} {}'.format(args[0], args[1]))
+                    if args[1] == 'PASS':
+                        eprint('in play. Move is PASS.')
+                        self.last_move_pass=True
+                        success = True
+                    else:
+                        try:
+                            (c, p) = c_cd2cp(args[0] + ' ' + args[1], self.player.board.N)
+                            res = self.player.board.play(c, p)
                             if self.verbose:
-                                eprint("Illegal move in gtp_engine. play. res:{}".format(res))
+                                eprint("args:{} c:{} p:{} res:{}".format(args, c, p, res))
+                            if res < 0:
+                                if self.verbose:
+                                    eprint("Illegal move in gtp_engine. play. res:{}".format(res))
+                                success = False
+                                result = 'illegal move'
+                            else:
+                                result = ''
+                        except Exception as err:
+                            if self.verbose:
+                                eprint('Exception in gtp_engine.play(). Error:{}'.format(err))
                             success = False
-                            result = 'illegal move'
-                        else:
-                            result = ''
-                    except Exception as err:
-                        if self.verbose:
-                            eprint('Exception in gtp_engine.play(). Error:{}'.format(err))
-                        success = False
-                        result = 'syntax error'
+                            result = 'syntax error'
 
             elif cmd == 'genmove':
                 if len(args) < 1:
                     result = 'syntax error'
                     success = False
                 else:
-                    color = args[0].lower()
-                    if color == 'black':
-                        color = 'b'
-                    if color == 'white':
-                        color = 'w'
-
-                    if color != 'b' and color != 'w':
-                        success = False
-                        result = 'syntax error'
+                    #FIRST VERIFY IF THE OTHER PLAYER HAS NOT PASSED
+                    if self.last_move_pass==True:
+                        eprint('Since the other program passed we also pass.')
+                        eprint('This is trusting the other program knows better when the game has finished.')
+                        self.last_move_pass=False
+                        result='pass'
                     else:
-                        c = color2c(color)
-                        mov = self.player.genmove(c)
-                        if mov is None:
-                            result = 'pass'
+                        color = args[0].lower()
+                        if color == 'black':
+                            color = 'b'
+                        if color == 'white':
+                            color = 'w'
+
+                        if color != 'b' and color != 'w':
+                            success = False
+                            result = 'syntax error'
                         else:
-                            result = p2cd(mov, self.player.board.N)
+                            c = color2c(color)
+                            mov = self.player.genmove(c)
+                            if mov is None:
+                                result = 'pass'
+                            else:
+                                result = p2cd(mov, self.player.board.N)
 
             elif cmd == 'undo':
                 if len(self.player.board.move_history) == 0:
@@ -183,14 +209,14 @@ class GtpEngine:
                 else:
                     self.player.board.undo()
 
-            elif cmd == 'final_score':
-                score = self.player.board.final_score()
-                if score > 0:
-                    result = "B+{}".format(score)
-                elif score < 0:
-                    result = "W+{}".format(abs(score))
-                else:
-                    result = '0'
+            # elif cmd == 'final_score':
+            #     score = self.player.board.final_score()
+            #     if score > 0:
+            #         result = "B+{}".format(score)
+            #     elif score < 0:
+            #         result = "W+{}".format(abs(score))
+            #     else:
+            #         result = '0'
 
             elif cmd == 'showboard':
                 result = self.player.board.__str__()
@@ -207,9 +233,12 @@ class GtpEngine:
 
 
 def main():
-    player = MCPlayerQ(3)
-    player.load_Q(player_file[3])
-    gtp = GtpEngine(player, verbose=False)
+    #player = MCPlayerQ(3)
+    #player.load_Q(player_file[3])
+    #player=CNNPlayer(9)
+
+    gtp = GtpEngine(9, CNNPlayer, verbose=True)
+    #gtp = GtpEngine(3, MCPlayerQ, verbose=True)
     gtp.gtp_session()
 
 

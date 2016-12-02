@@ -35,6 +35,9 @@ class MCPlayerQ(Player):
     def __init__(self, N, seed=None, epsilon=0.2, verbose=False, OI=False):
         Player.__init__(self, N)
 
+        self.player_file = {2:'MC_Q_EG_OI_N2_G1000000_seed2_epsilon50_time744.npy',
+                            3:'MC_Q_EG_OI_N3_G100000_seed2_epsilon50_time315.npy'}
+
         # optimistic initialization
         self.OI = OI
 
@@ -185,13 +188,23 @@ class MCPlayerQ(Player):
 
             if self.board.ko and mov == self.board.ko:  # move is a ko so continue
                 continue
+            #elif self.board.is_my_eye(c, mov):
+#                eprint('it is my own eye, so dont play here. color:{} mov:{}'.format(c, utils.p2cd(mov, N)))
+#                continue
             else:
                 res = self.board.play(c, mov)
                 if res < 0:
                     # error, so try next action
+                    eprint('Illegal move. res:{} color:{} move:{}. we will try the next one'.format(res, c, mov))
                     continue
                 else:
                     break
+        else:
+            #if there are no legal moves, then pass
+            eprint('No legal moves. PASSING')
+            mov = None
+            a=N*N
+
         self.episode_history.append((c, s, a))
         return mov
 

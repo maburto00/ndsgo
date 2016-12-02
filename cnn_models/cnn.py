@@ -45,27 +45,27 @@ from six.moves import urllib
 import tensorflow as tf
 
 # from tensorflow.models.image.cifar10 import cifar10_input
-import cnn_input
+from cnn_models import cnn_input
 
 FLAGS = tf.app.flags.FLAGS
 
 # Basic model parameters.
 tf.app.flags.DEFINE_integer('batch_size', 128,
                             """Number of images to process in a batch.""")
-#tf.app.flags.DEFINE_string('data_dir', '9x9_10games',
-#                           """Path to the data directory.""")
-tf.app.flags.DEFINE_string('data_dir', 'KGS_10games',
+tf.app.flags.DEFINE_string('data_dir', 'gogod_9x9_games',
                            """Path to the data directory.""")
+#tf.app.flags.DEFINE_string('data_dir', 'KGS_10games',
+#                           """Path to the data directory.""")
 
 tf.app.flags.DEFINE_boolean('use_fp16', False,
                             """Train the model using fp16.""")
 
 # Global constants describing the CIFAR-10 data set.
 # TODO: all of this should be defined in FLAGS
-IMAGE_SIZE = cnn_input.IMAGE_SIZE
+#IMAGE_SIZE = cnn_input.IMAGE_SIZE
 #NUM_CLASSES = cnn_input.NUM_CLASSES
-NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = cnn_input.NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN
-NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = cnn_input.NUM_EXAMPLES_PER_EPOCH_FOR_EVAL
+#NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = cnn_input.NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN
+#NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = cnn_input.NUM_EXAMPLES_PER_EPOCH_FOR_EVAL
 
 # Constants describing the training process.
 MOVING_AVERAGE_DECAY = 0.9999  # The decay to use for the moving average.
@@ -180,7 +180,7 @@ def inputs(eval_data,train_num_examples,test_num_examples, boardsize,num_channel
     """
     if not FLAGS.data_dir:
         raise ValueError('Please supply a data_dir')
-    data_dir = os.path.join(FLAGS.data_dir, 'cifar-10-batches-bin')
+    data_dir = FLAGS.data_dir
     images, labels = cnn_input.inputs(eval_data=eval_data,
                                       data_dir=data_dir,
                                       batch_size=FLAGS.batch_size,
@@ -195,7 +195,7 @@ def inputs(eval_data,train_num_examples,test_num_examples, boardsize,num_channel
 
 
 def inference(images,boardsize,num_channels):
-    """Build the CIFAR-10 model.
+    """Build the model.
 
     Args:
       images: Images returned from distorted_inputs() or inputs().
@@ -229,7 +229,7 @@ def inference(images,boardsize,num_channels):
 
     # conv2
     # softmax, i.e. softmax(WX + b)
-    with tf.variable_scope('softmax_linear') as scope:
+    with tf.variable_scope('logits') as scope:
         kernel = _variable_with_weight_decay('weights',
                                              shape=[1, 1, 32, 1],
                                              stddev=0.1,
@@ -241,7 +241,7 @@ def inference(images,boardsize,num_channels):
         biases = _variable_on_cpu('biases', [boardsize*boardsize],
                                   tf.constant_initializer(0.1))
 
-        softmax_linear= tf.nn.relu(reshape + biases ,name=scope.name)
+        logits= tf.nn.relu(reshape + biases ,name=scope.name)
 
 
         #reshape = tf.reshape(conv2, [FLAGS.batch_size,-1])
@@ -251,7 +251,7 @@ def inference(images,boardsize,num_channels):
         #                          tf.constant_initializer(0.0))
         #_activation_summary(softmax_linear)
 
-    return softmax_linear
+    return logits
 
 
 def loss(logits, labels):
@@ -306,7 +306,7 @@ def _add_loss_summaries(total_loss):
     return loss_averages_op
 
 
-def train(total_loss, global_step):
+def train(total_loss, global_step,train_num_examples):
     """Train CIFAR-10 model.
 
     Create an optimizer and apply to all trainable variables. Add moving
@@ -320,7 +320,7 @@ def train(total_loss, global_step):
       train_op: op for training.
     """
     # Variables that affect learning rate.
-    num_batches_per_epoch = NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN / FLAGS.batch_size
+    num_batches_per_epoch = train_num_examples / FLAGS.batch_size
     decay_steps = int(num_batches_per_epoch * NUM_EPOCHS_PER_DECAY)
 
     # Decay the learning rate exponentially based on the number of steps.
@@ -360,6 +360,17 @@ def train(total_loss, global_step):
         train_op = tf.no_op(name='train')
 
     return train_op
+
+def read_properties_file():
+    with open(FLAGS.data_dir+'/'+FLAGS.data_dir+'.prop','r') as f:
+        num_examples=[int(c) for c in f.readline().strip().split(',')]
+        train_num_examples=sum(num_examples[:-1])
+        test_num_examples=int(num_examples[-1])
+        num_channels=int(f.readline().strip())
+        boardsize=int(f.readline().strip())
+
+        print(num_examples,train_num_examples,test_num_examples,num_channels,boardsize)
+    return train_num_examples,test_num_examples,num_channels,boardsize
 
 
 def maybe_download_and_extract():

@@ -17,6 +17,7 @@ class Player:
 
     def __init__(self, N):
         self.board = Board(N)
+        self.player_file={}
 
     def new_game(self):
         self.board.clear_board()

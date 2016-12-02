@@ -28,15 +28,14 @@ import tensorflow as tf
 # image size of 32 x 32. If one alters this number, then the entire model
 # architecture will change and any model would need to be retrained.
 #IMAGE_SIZE = 24
-IMAGE_SIZE = 9
-NUM_CHANNELS = 4
+#IMAGE_SIZE = 9
+#NUM_CHANNELS = 4
 
 # Global constants describing the CIFAR-10 data set.
-NUM_CLASSES = IMAGE_SIZE*IMAGE_SIZE
+#NUM_CLASSES = IMAGE_SIZE*IMAGE_SIZE
 
-# TODO: determine the number to assign here
-NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 50000
-NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = 10000
+#NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 50000
+#NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = 10000
 
 
 def read_data(filename_queue,boardsize,num_channels):
@@ -201,7 +200,7 @@ def distorted_inputs(data_dir, batch_size, train_num_examples, boardsize, num_ch
                                          shuffle=True)
 
 
-def inputs(eval_data, data_dir, filename, batch_size,train_num_examples,test_num_examples,boardsize,num_channels):
+def inputs(eval_data, data_dir, batch_size,train_num_examples,test_num_examples,boardsize,num_channels):
   """Construct input for CIFAR evaluation using the Reader ops.
 
   Args:
@@ -230,18 +229,18 @@ def inputs(eval_data, data_dir, filename, batch_size,train_num_examples,test_num
 
   # Read examples from files in the filename queue.
   read_input = read_data(filename_queue,boardsize,num_channels)
-  reshaped_image = tf.cast(read_input.uint8image, tf.float32)
+  reshaped_image = read_input.uint8image
 
-  height = IMAGE_SIZE
-  width = IMAGE_SIZE
+  height = boardsize
+  width = boardsize
 
   # Image processing for evaluation.
   # Crop the central [height, width] of the image.
-  resized_image = tf.image.resize_image_with_crop_or_pad(reshaped_image,
-                                                         width, height)
+  #resized_image = tf.image.resize_image_with_crop_or_pad(reshaped_image,width, height)
+  float_image = tf.cast(tf.reshape(reshaped_image,[height,width,num_channels]),tf.float32)
 
   # Subtract off the mean and divide by the variance of the pixels.
-  float_image = tf.image.per_image_whitening(resized_image)
+  #float_image = tf.image.per_image_whitening(resized_image)
 
   # Ensure that the random shuffling has good mixing properties.
   min_fraction_of_examples_in_queue = 0.4

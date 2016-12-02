@@ -109,7 +109,7 @@ def process_game(fullpath_fn, boardsize):
             p = sgfxy2p(xy, size)
 
             # first, store current position and predicted move as a register
-            reg = board.create_register(c, p)
+            reg = board.create_board_move_register(c, p)
             #print('len of reg:{}'.format(len(reg)))
 
             # write to file or append to something and then write
@@ -335,8 +335,8 @@ if __name__ == '__main__':
     # shuffle_dataset('9x9_10games.bin')
     # generate_idx_dataset_9x9('9x9_10games')
 
-    #generate_idx_dataset9('gogod_9x9_games')
+    generate_idx_dataset9('gogod_9x9_games')
     #generate_idx_dataset9('9x9_10games')
     #generate_idx_dataset19('KGS2001')
-    generate_idx_dataset19('KGS_10games')
+    #generate_idx_dataset19('KGS_10games')
     #generate_idx_dataset19('KGS_100games')

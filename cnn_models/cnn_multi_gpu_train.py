@@ -48,7 +48,7 @@ import numpy as np
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 #from tensorflow.models.image.cnn import cnn
-from cnn import cnn
+from cnn_models import cnn
 
 FLAGS = tf.app.flags.FLAGS
 

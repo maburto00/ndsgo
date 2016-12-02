@@ -24,7 +24,7 @@ import os
 import tensorflow as tf
 
 #from tensorflow.models.image.cnn import cnn_input
-from cnn import cnn_input
+from cnn_models import cnn_input
 
 
 class CNNInputTest(tf.test.TestCase):

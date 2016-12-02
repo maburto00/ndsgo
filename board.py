@@ -68,6 +68,13 @@ class Board:
         for c, p in temp_history:
             self.play(c, p)
 
+    def is_my_eye(self, c, p):
+        result=True
+        for n in self._neighbors(p):
+            if self.board[n]!=c:
+                result=False
+        return result
+
     def _neighbors(self, p):
         """
         return neighbors in clockwise fashion
@@ -145,18 +152,7 @@ class Board:
         return board,a
 
 
-    def create_register(self, player_color, p):
-        """
-        from board position and next move, create training example in byte form
-        # <label 1byte><board position features size*size*num_features bytes>
-        :return:
-        """
-        # features 1,2,3: Player stone/opponent stone/empty
-        # feature 4: all ones
-
-        #here we define the number of feature layers that our input will have
-
-
+    def create_board_register(self,player_color):
         if player_color == Color.BLACK:
             opp_color = Color.WHITE
         else:
@@ -169,7 +165,7 @@ class Board:
         all_ones = [1 for i in range(N*N)]
 
         i = 0
-
+        #fill the feature planes
         for r in range(1, N + 1):
             for c in range(1, N + 1):
                 if self.board[rc2p(r, c, N)] == player_color:
@@ -182,27 +178,37 @@ class Board:
         #eprint(player_stone)
         #eprint(opp_stone)
         #eprint(empty_stone)
-
-
-
         # append the first four features
         feature_planes = player_stone + opp_stone + empty_stone + all_ones
 
+        return bytearray(feature_planes)
 
-        move_label = p2a(p, self.N)
 
+    def create_board_move_register(self, player_color, p):
+        """
+        from board position and next move, create training example in byte form
+        # <label 1byte><board position features size*size*num_features bytes>
+        :return:
+        """
+        # features 1,2,3: Player stone/opponent stone/empty
+        # feature 4: all ones
+
+        #here we define the number of feature layers that our input will have
 
         # <label 2 bytes><board position features size*size*num_features bytes>
 
+
+        feature_planes_bytes=self.create_board_register(player_color)
+        move_label = p2a(p, self.N)
         # Big Endian
-        #register_array = [move_label/ 256, move_label % 256]+ feature_planes
+        # register_array = [move_label/ 256, move_label % 256]+ feature_planes
 
         # little-endian
-        register_array = [move_label % 256, move_label / 256] + feature_planes
+        register_bytes = bytearray([move_label % 256, move_label / 256]) + feature_planes_bytes
         # to acces the int formed by two bytes use:
         #       struct.unpack('>h', bytearray([0, 1]))[0]
 
-        register_bytes = bytearray(register_array)
+        #register_bytes = bytearray(register_array)
         return register_bytes
 
     def add_black_handicap_stone(self,p):
@@ -585,32 +591,54 @@ def test_reg():
     #next move W C3
     p=cd2p('C3',board.N)
     eprint(p)
-    reg=board.create_register(Color.WHITE,p)
+    reg=board.create_board_move_register(Color.WHITE, p)
     eprint('len reg:{}'.format(len(reg)))
     eprint(reg)
     eprint(reg[0])
     eprint(reg[1])
 
+    eprint('GET BOARD AND MOVE FROM REGISTER')
     board2,a=Board.get_board_and_move_from_register_str(N, str(reg), Color.WHITE)
     eprint(board2)
     eprint(utils.p2cd(utils.a2p(a,N),N))
     board2.play(Color.WHITE,utils.a2p(a,N))
     eprint(board2)
 
+def test_eye():
+    N = 9
+    board = Board(N)
+    seq1 = ['B C4', 'B D3', 'B D5', 'B E4',
+            'W E6', 'W F5', 'W F7', 'W G6']
+    board.play_seq(seq1)
+    eprint(board)
+
+    seq2=['B D4','W D4','B F6','W F6','B E5','W E5']
+
+    for mov in seq2:
+        c,p=utils.c_cd2cp(mov,N)
+        eprint(c,p)
+        eprint('mov:{} is_my_eye:{}'.format(mov, board.is_my_eye(c, p)))
+
+#    seq = ['B B2', 'W B3', 'B C1']
+
+
 if __name__ == '__main__':
     # test_init()
     # test_capture()
     # test_suicide()
     #test_play_seq()
-    test_ko()
+    #test_ko()
     # test_score()
     # test_inf_play()
     # test_nonempty()
     # test_get_group()
     # test_eyes()
-    # test_undo()
-    # test_reg()
+    #test_undo()
+    #test_reg()
+    #board=Board(9)
+    #print(board)
 
+    test_eye()
     # test_str()
 
 
