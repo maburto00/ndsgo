@@ -8,7 +8,7 @@ WE = 1
 letter_coord = 'ABCDEFGHJKLMNOPQRST'
 color_string = 'XO.'
 
-NUM_CHANNELS = 4  #used in dataset_generator
+#NUM_CHANNELS = 4  #used in dataset_generator
 
 class Error:
     SUICIDE, KO, NONEMPTY, NOERROR = [-3, -2, -1, 0]
@@ -151,8 +151,17 @@ class Board:
                 i += 1
         return board,a
 
+    def create_board_register(self, player_color, num_channels):
+        if num_channels==4:
+            return self.create_board_register_4(player_color)
+        elif num_channels==8:
+            #not implemented yet
+            eprint('8 channels not impelmented yet')
+            pass
 
-    def create_board_register(self,player_color):
+
+    def create_board_register_4(self,player_color):
+
         if player_color == Color.BLACK:
             opp_color = Color.WHITE
         else:
@@ -184,7 +193,7 @@ class Board:
         return bytearray(feature_planes)
 
 
-    def create_board_move_register(self, player_color, p):
+    def create_board_move_register(self, player_color, p,num_channels):
         """
         from board position and next move, create training example in byte form
         # <label 1byte><board position features size*size*num_features bytes>
@@ -198,7 +207,7 @@ class Board:
         # <label 2 bytes><board position features size*size*num_features bytes>
 
 
-        feature_planes_bytes=self.create_board_register(player_color)
+        feature_planes_bytes=self.create_board_register(player_color,num_channels)
         move_label = p2a(p, self.N)
         # Big Endian
         # register_array = [move_label/ 256, move_label % 256]+ feature_planes
@@ -621,6 +630,22 @@ def test_eye():
 
 #    seq = ['B B2', 'W B3', 'B C1']
 
+def test_p2cd():
+    N = 9
+    board = Board(N)
+    seq1 = ['B C5', 'B D3', 'B D5', 'B E4',
+            'W E6', 'W F5', 'W F7', 'W G6']
+    board.play_seq(seq1)
+    c,p=utils.c_cd2cp(seq1[0],N)
+
+    a=utils.p2a(p,N)
+    cd=utils.p2cd(p,N)
+    eprint('a:{} p:{} cd:{} '.format(a,p,cd))
+
+
+
+    eprint(board)
+
 
 if __name__ == '__main__':
     # test_init()
@@ -635,10 +660,11 @@ if __name__ == '__main__':
     # test_eyes()
     #test_undo()
     #test_reg()
-    #board=Board(9)
+    #board=Board(19)
     #print(board)
 
-    test_eye()
+    test_p2cd()
+    #test_eye()
     # test_str()
 
 

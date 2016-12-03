@@ -6,8 +6,6 @@ letter_coord = 'ABCDEFGHJKLMNOPQRST'
 sgf_coord = 'abcdefghijklmnopqrs'
 
 
-
-
 class Color:
     """
     Use for indices in lists for Board (not for Q tables)
@@ -158,3 +156,15 @@ def letter2int(c):
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
+def test_p2cd():
+    N=19
+    p=137
+
+    cd=p2cd(p,9)
+    print('p:{} cd:{}'.format(p,cd))
+
+def main():
+    test_p2cd()
+
+if __name__=='__main__':
+    main()

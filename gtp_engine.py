@@ -13,7 +13,6 @@ class GtpEngine:
         self.verbose = verbose
         self.last_move_pass = False #Used to finish the game when the other player passes
 
-
         # commented commands are not implemented yet
         self.administrative_commands = ['protocol_version', 'name', 'version', 'known_command', 'list_commands', 'quit']
         self.setup_commands = ['boardsize', 'clear_board', 'komi',

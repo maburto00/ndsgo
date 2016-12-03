@@ -52,17 +52,17 @@ tf.app.flags.DEFINE_string('eval_dir', 'cnn_eval_9',
                            """Directory where to write event logs.""")
 tf.app.flags.DEFINE_string('eval_data', 'test',
                            """Either 'test' or 'train_eval'.""")
-tf.app.flags.DEFINE_string('checkpoint_dir', 'cnn_train_9',
+tf.app.flags.DEFINE_string('checkpoint_dir', 'KGS2016_L1_CH4',
                            """Directory where to read model checkpoints.""")
-tf.app.flags.DEFINE_integer('eval_interval_secs', 60 * 5,
+tf.app.flags.DEFINE_integer('eval_interval_secs', 60*60,
                             """How often to run the eval.""")
-tf.app.flags.DEFINE_integer('num_examples', 10000,
+tf.app.flags.DEFINE_integer('num_examples', 1000,
                             """Number of examples to run.""")
 tf.app.flags.DEFINE_boolean('run_once', False,
                             """Whether to run eval only once.""")
 
 
-def eval_once(saver, summary_writer, top_k_op, summary_op):
+def eval_once(saver, summary_writer, top_k_op, summary_op,num_examples):
     """Run Eval once.
 
     Args:
@@ -92,12 +92,14 @@ def eval_once(saver, summary_writer, top_k_op, summary_op):
                 threads.extend(qr.create_threads(sess, coord=coord, daemon=True,
                                                  start=True))
 
+            #num_iter = int(math.ceil(num_examples / FLAGS.batch_size))
             num_iter = int(math.ceil(FLAGS.num_examples / FLAGS.batch_size))
             true_count = 0  # Counts the number of correct predictions.
             total_sample_count = num_iter * FLAGS.batch_size
             step = 0
             while step < num_iter and not coord.should_stop():
                 predictions = sess.run([top_k_op])
+                print('step:{}'.format(step))
                 #print(predictions)
                 #board=Board(boardsize)
                 #board.get_board_and_move_from_register_str(boardsize,)
@@ -125,14 +127,14 @@ def evaluate():
     with tf.Graph().as_default() as g:
         # Get images and labels for CIFAR-10.
         eval_data = FLAGS.eval_data == 'test'
-        images, labels = cnn.inputs(eval_data, train_num_examples, test_num_examples, boardsize, num_channels)
+        images, labels = cnn.inputs(eval_data, num_train_files, train_num_examples, test_num_examples, boardsize, num_channels)
 
         # Build a Graph that computes the logits predictions from the
         # inference model.
         logits = cnn.inference(images, boardsize, num_channels)
 
         # Calculate predictions.
-        top_k_op = tf.nn.in_top_k(logits, labels, 180)
+        top_k_op = tf.nn.in_top_k(logits, labels, 10)
 
         #print(top_k_op)
         #with tf.Session() as sess:
@@ -150,7 +152,8 @@ def evaluate():
         summary_writer = tf.train.SummaryWriter(FLAGS.eval_dir, g)
 
         while True:
-            eval_once(saver, summary_writer, top_k_op, summary_op)
+            eval_once(saver, summary_writer, top_k_op, summary_op,test_num_examples)
+            #eval_once(saver, summary_writer, top_k_op, summary_op, 1000)
             if FLAGS.run_once:
                 break
             time.sleep(FLAGS.eval_interval_secs)
@@ -165,10 +168,8 @@ def main(argv=None):  # pylint: disable=unused-argument
     global num_channels
     global train_num_examples
     global test_num_examples
-    train_num_examples, test_num_examples, num_channels, boardsize = cnn.read_properties_file()
-
-
-
+    global num_train_files
+    num_train_files, train_num_examples, test_num_examples, num_channels, boardsize = cnn.read_properties_file()
 
     evaluate()
 

@@ -1,5 +1,5 @@
 from player import Player
-from board import NUM_CHANNELS
+#from board import NUM_CHANNELS
 import tensorflow as tf
 import numpy as np
 import utils
@@ -19,17 +19,20 @@ class CNNPlayer(Player):
         Player.__init__(self, N)
 
         dir_name='/home/mario/Dropbox/PycharmProjects/ndsgo'
-        self.player_file = {9: os.path.join(dir_name,'model_9x9.ckpt'),
-                            19: os.path.join(dir_name,'model_19x19.ckpt')}
+        self.player_file = {9: os.path.join(dir_name,'model_9x9'),
+                            19: os.path.join(dir_name,'model_19x19')}
 
         self.verbose = verbose
 
         boardsize = N
-        num_channels = NUM_CHANNELS
 
-        self.data = tf.placeholder(tf.float32, [1, boardsize, boardsize, num_channels])
+        with open(self.player_file[boardsize]+'.prop','r') as f:
+            self.num_channels=int(f.readline().split(',')[1])
 
-        self.logits = cnn.inference(self.data, boardsize, num_channels)
+
+        self.data = tf.placeholder(tf.float32, [1, boardsize, boardsize, self.num_channels])
+
+        self.logits = cnn.inference_layer(self.data, boardsize, self.num_channels,4)
         self.sm_output = tf.nn.softmax(self.logits)
 
         # init = tf.initialize_all_variables()
@@ -42,7 +45,7 @@ class CNNPlayer(Player):
         except:
             eprint('There is no file for boardsize {}'.format(N))
             exit()
-        saver.restore(self.sess, file_name)
+        saver.restore(self.sess, file_name+'.ckpt')
 
 #    def new_game(self):
  #       Player.new_game(self)
@@ -54,7 +57,7 @@ class CNNPlayer(Player):
         :return: (row,col) mov
         """
         # get data
-        board_reg_str = str(self.board.create_board_register(c))
+        board_reg_str = str(self.board.create_board_register(c,self.num_channels))
 
         # data = data.reshape(num_images, NUM_CHANNELS, IMAGE_SIZE, IMAGE_SIZE)
         # data = data.transpose(0, 2, 3, 1)
@@ -63,7 +66,7 @@ class CNNPlayer(Player):
 
         b_data = np.frombuffer(board_reg_str, dtype=np.uint8)
         b_data = b_data.astype(np.float32)
-        b_data = b_data.reshape(1, NUM_CHANNELS, boardsize, boardsize)
+        b_data = b_data.reshape(1, self.num_channels, boardsize, boardsize)
         # print(b_data)
         b_data = b_data.transpose(0, 2, 3, 1)
         # print(b_data)
@@ -130,9 +133,8 @@ def test_not_fill_eyes(N, num_moves=10, verbose=False):
     eprint(player.board)
 
 def main():
-    #test_player(9, num_moves=100, verbose=False)
-    test_not_fill_eyes(9, num_moves=100, verbose=True)
-
+    test_player(9, num_moves=50, verbose=True)
+    #test_not_fill_eyes(19, num_moves=100, verbose=True)
 
 if __name__ == '__main__':
     main()

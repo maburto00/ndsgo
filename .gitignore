@@ -22,3 +22,8 @@ cnn_models/cnn_train/*
 cnn_models/cnn_train_9/*
 cnn_models/cnn_train_9_gogod/*
 cnn_models/cnn_eval_9/*
+cnn_models/KGS2016_L1_CH4/*
+cnn_models/KGS2016_L2_CH4/*
+cnn_models/KGS2016_L4_CH4/*
+cnn_models/gogod_9x9_train/*
+

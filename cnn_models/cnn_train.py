@@ -39,7 +39,9 @@ from __future__ import print_function
 from datetime import datetime
 import os.path
 import time
-
+from board import Board
+from utils import Color
+import utils
 import numpy as np
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
@@ -49,10 +51,10 @@ from cnn_models import cnn
 
 FLAGS = tf.app.flags.FLAGS
 
-tf.app.flags.DEFINE_string('train_dir', 'cnn_train_9_gogod',
+tf.app.flags.DEFINE_string('train_dir', 'gogod_9x9_train',
                            """Directory where to write event logs """
                            """and checkpoint.""")
-tf.app.flags.DEFINE_integer('max_steps', 1000000,
+tf.app.flags.DEFINE_integer('max_steps', 1000010,
                             """Number of batches to run.""")
 tf.app.flags.DEFINE_boolean('log_device_placement', False,
                             """Whether to log device placement.""")
@@ -64,13 +66,15 @@ def train():
         global_step = tf.Variable(0, trainable=False)
 
         # Get images and labels for CIFAR-10.
-        images, labels = cnn.distorted_inputs(train_num_examples,
+        images, labels = cnn.distorted_inputs(num_train_files,train_num_examples,
                                                      boardsize,
                                                      num_channels)
 
         # Build a Graph that computes the logits predictions from the
         # inference model.
-        logits = cnn.inference(images, boardsize, num_channels)
+        #logits = cnn.inference_l2(images, boardsize, num_channels)
+        #logits = cnn.inference_layer(images, boardsize, num_channels,4)
+        logits=cnn.inference(images,boardsize,num_channels)
 
         # Calculate loss.
         loss = cnn.loss(logits, labels)
@@ -81,6 +85,8 @@ def train():
 
         # Create a saver.
         saver = tf.train.Saver(tf.all_variables())
+
+        saver_exp= tf.train.Saver(tf.all_variables())
 
         # Build the summary operation based on the TF collection of Summaries.
         summary_op = tf.merge_all_summaries()
@@ -93,6 +99,8 @@ def train():
             log_device_placement=FLAGS.log_device_placement))
         sess.run(init)
 
+        stored_performace=[]
+
         # Start the queue runners.
         tf.train.start_queue_runners(sess=sess)
 
@@ -100,8 +108,23 @@ def train():
 
         for step in xrange(FLAGS.max_steps):
             start_time = time.time()
-            _, loss_value = sess.run([train_op, loss])
+            _, loss_value= sess.run([train_op, loss])
+            #images = sess.run(images)
             duration = time.time() - start_time
+
+            # np.set_printoptions(threshold="nan")
+            # images=np.array(images)
+            # images=images.transpose(0, 3, 1, 2)
+            # image=images[0]
+            # reg=bytearray([1,0])+bytearray(image.reshape([19*19*4]))
+            # print(image)
+            # board, a = Board.get_board_and_move_from_register_str(19,reg,Color.BLACK)
+            # print(board)
+            # p=utils.a2p(a,19)
+            # cd=utils.p2cd(p,19)
+            # print('a:{} p:{} cd:{}'.format(a,p,cd))
+            #
+            # print(images[0])
 
             assert not np.isnan(loss_value), 'Model diverged with loss = NaN'
 
@@ -115,6 +138,9 @@ def train():
                 print(format_str % (datetime.now(), step, loss_value,
                                     examples_per_sec, sec_per_batch))
 
+                #print(stored_performace)
+
+
             if step % 100 == 0:
                 summary_str = sess.run(summary_op)
                 summary_writer.add_summary(summary_str, step)
@@ -123,6 +149,13 @@ def train():
             if step % 1000 == 0 or (step + 1) == FLAGS.max_steps:
                 checkpoint_path = os.path.join(FLAGS.train_dir, 'model.ckpt')
                 saver.save(sess, checkpoint_path, global_step=step)
+
+            if step==10 or step ==100 or step==1000 or step==10000 or step==100000 or step==1000000:
+                checkpoint_path = os.path.join(FLAGS.train_dir, 'model_exp.ckpt')
+                saver_exp.save(sess, checkpoint_path, global_step=step)
+
+        #print(stored_performace)
+
 
 def main(argv=None):  # pylint: disable=unused-argument
 
@@ -137,7 +170,9 @@ def main(argv=None):  # pylint: disable=unused-argument
     #NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN=train_num_examples
     global test_num_examples
     #NUM_EXAMPLES_PER_EPOCH_FOR_EVAL=test_num_examples
-    train_num_examples, test_num_examples, num_channels, boardsize=cnn.read_properties_file()
+    global num_train_files
+
+    num_train_files,train_num_examples, test_num_examples, num_channels, boardsize=cnn.read_properties_file()
 
     train()
 
