@@ -111,7 +111,7 @@ class GtpEngine:
                                 success=True
 
                             elif self.Player_class is MCPlayerQ:
-                                self.player = self.Player_class(size)
+                                self.player = self.Player_class(size,epsilon=0.0)
                                 self.player.load_Q(self.player.player_file[size])
                         else:
                             success = False
@@ -231,15 +231,25 @@ class GtpEngine:
             sys.stdout.flush()
 
 
-def main():
+def main(boardsize):
     #player = MCPlayerQ(3)
     #player.load_Q(player_file[3])
     #player=CNNPlayer(9)
+    if boardsize==2 or boardsize==3:
+        gtp = GtpEngine(boardsize, MCPlayerQ, verbose=True)
+    elif boardsize==9 or boardsize==19:
+        gtp = GtpEngine(boardsize, CNNPlayer, verbose=True)
+    #gtp = GtpEngine(9, CNNPlayer, verbose=True)
 
-    gtp = GtpEngine(9, CNNPlayer, verbose=True)
     #gtp = GtpEngine(3, MCPlayerQ, verbose=True)
     gtp.gtp_session()
 
 
 if __name__ == '__main__':
-    main()
+
+    if len(sys.argv)== 2:
+        boardsize=int(sys.argv[1])
+    else:
+        boardsize=9
+    eprint('In gtp_engine.py. boardsize:{}'.format(boardsize))
+    main(boardsize)

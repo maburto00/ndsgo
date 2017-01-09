@@ -8,28 +8,29 @@ import time
 
 import numpy as np
 import tensorflow as tf
-
+import os
 from board import Board
 
 from cnn_models import cnn
 
 FLAGS = tf.app.flags.FLAGS
 
-tf.app.flags.DEFINE_string('eval_dir', 'KGS2016_eval_l3_new',
+tf.app.flags.DEFINE_string('eval_dir', 'gogod_eval_l2_new',
                            """Directory where to write event logs.""")
-tf.app.flags.DEFINE_string('eval_data', 'test',
+tf.app.flags.DEFINE_string('eval_data', 'train_eval',
                            """Either 'test' or 'train_eval'.""")
-tf.app.flags.DEFINE_string('checkpoint_dir', 'KGS_train_l3_new',
+tf.app.flags.DEFINE_string('checkpoint_dir', 'gogod_train_l2_new',
                            """Directory where to read model checkpoints.""")
 tf.app.flags.DEFINE_integer('eval_interval_secs', 5,
                             """How often to run the eval.""")
-tf.app.flags.DEFINE_integer('num_examples', 385694,
+#5760, 643
+tf.app.flags.DEFINE_integer('num_examples', 5760,
                             """Number of examples to run.""")
 tf.app.flags.DEFINE_boolean('run_once', False,
                             """Whether to run eval only once.""")
 
 
-def eval_once(saver, summary_writer, top_k_op, summary_op,num_examples):
+def eval_once(saver, summary_writer, top_k_op, summary_op,num_examples,file_name):
     """Run Eval once.
 
     Args:
@@ -42,12 +43,12 @@ def eval_once(saver, summary_writer, top_k_op, summary_op,num_examples):
         ckpt = tf.train.get_checkpoint_state(FLAGS.checkpoint_dir)
         if ckpt and ckpt.model_checkpoint_path:
             # Restores from checkpoint
-            saver.restore(sess, ckpt.model_checkpoint_path)
+            saver.restore(sess, file_name)
             # Assuming model_checkpoint_path looks something like:
             #   /my-favorite-path/train/model.ckpt-0,
             # extract global_step from it.
             global_step = ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]
-            print('global_step:{}'.format(global_step))
+            #print('global_step:{}'.format(global_step))
         else:
             print('No checkpoint file found')
             return
@@ -61,11 +62,15 @@ def eval_once(saver, summary_writer, top_k_op, summary_op,num_examples):
                                                  start=True))
 
             #num_iter = int(math.ceil(num_examples / FLAGS.batch_size))
+
             num_iter = int(math.ceil(FLAGS.num_examples / FLAGS.batch_size))
+            print('num_iter:{}'.format(num_iter))
             true_count = 0  # Counts the number of correct predictions.
             total_sample_count = num_iter * FLAGS.batch_size
             step = 0
             PRINT_INTERVAL = int(num_iter / 10)
+            if PRINT_INTERVAL==0:
+                PRINT_INTERVAL=1
             while step < num_iter and not coord.should_stop():
                 predictions = sess.run([top_k_op])
                 if step % PRINT_INTERVAL == 0 or step == num_iter:
@@ -102,7 +107,7 @@ def evaluate():
         # Build a Graph that computes the logits predictions from the
         # inference model.
         #logits = cnn.inference(images, boardsize, num_channels)
-        logits = cnn.inference_layer(images, boardsize, num_channels,11)
+        logits = cnn.inference_layer(images, boardsize, num_channels,0)
 
         # Calculate predictions.
         top_k_op = tf.nn.in_top_k(logits, labels, 1)
@@ -122,12 +127,20 @@ def evaluate():
 
         summary_writer = tf.train.SummaryWriter(FLAGS.eval_dir, g)
 
-        while True:
-            eval_once(saver, summary_writer, top_k_op, summary_op,test_num_examples)
+        for step in range(0,21000,1000):
+            dir_name = '/home/mario/Dropbox/PycharmProjects/ndsgo/cnn_models/{}'.format(FLAGS.checkpoint_dir)
+            fn="model.ckpt-{}".format(step)
+            full_fn= os.path.join(dir_name,fn)
+
+            #print('dirname:{}'.format(dir_name))
+            #print('fn:{}'.format(fn))
+            print('full_fn:{}'.format(full_fn))
+            print('global_step:{}'.format(step))
+            eval_once(saver, summary_writer, top_k_op, summary_op,test_num_examples,full_fn)
             #eval_once(saver, summary_writer, top_k_op, summary_op, 1000)
             if FLAGS.run_once:
                 break
-            time.sleep(FLAGS.eval_interval_secs)
+            #time.sleep(FLAGS.eval_interval_secs)
 
 
 def main(argv=None):  # pylint: disable=unused-argument

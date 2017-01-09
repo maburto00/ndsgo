@@ -14,6 +14,8 @@ import time
 LABEL_SIZE=2
 NUM_PRINTS=100
 SKIP_FILE_GENERATION=False
+PAUSE_BEFORE_SHUFFLING=True
+
 
 def get_property_value(property, sgf_properties, start_index=0):
     property_pos = sgf_properties.find(property)
@@ -459,8 +461,18 @@ def generate_idx_dataset(dirname,boardsize,num_channels,aug_data=False):
         print('Skipping this part. shuffled train file already exists')
     elapsed_time = time.time() - start_time
     total_time += elapsed_time
-    print('shuffled bin file created. Time to create {} s'.format(elapsed_time))
+    print('shuffled bin train file created. Time to create {} s'.format(elapsed_time))
 
+    #SHUFFLE TEST SET
+    start_time = time.time()
+    if SKIP_FILE_GENERATION == False or os.path.isfile(dirname + '_test_shuffled.bin') == False:
+        # shuffle complete dataset and shuffle training dataset
+        shuffle_dataset_in_memory(dirname + '_test', num_examples_test, boardsize, num_channels)
+    else:
+        print('Skipping this part. shuffled test file already exists')
+    elapsed_time = time.time() - start_time
+    total_time += elapsed_time
+    print('shuffled bin test file created. Time to create {} s'.format(elapsed_time))
 
     start_time = time.time()
     # 5 separate bin files
@@ -500,13 +512,13 @@ if __name__ == '__main__':
 
     #9x9 DATASETS
     #generate_idx_dataset9('/home/mario/datasets/9x9_10games',4)
-    #generate_idx_dataset9('/home/mario/datasets/gogod_9x9_games', 4)
-
+    generate_idx_dataset9('/home/mario/datasets/gogod_9x9_games', 4)
 
     #19x19 DATASETS
     #generate_idx_dataset19('/home/mario/datasets/KGS_10games',4)
     #generate_idx_dataset19('/tmp/datasets/KGS_100games', 4)
     #generate_idx_dataset19('/tmp/datasets/KGS2001',4)
-    #generate_idx_dataset19('/home/mario/datasets/KGS2016_sgf', 4)
+    #generate_idx_dataset19('/home/mario/datasets/KGS2016', 4)
+    #shuffle_dataset_in_memory('/tmp/datasets/KGS2016_train',3471228,19,4)
     #shuffle_dataset_in_memory('/tmp/datasets/KGS2016_train',3471228,19,4)
 

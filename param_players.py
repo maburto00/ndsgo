@@ -13,33 +13,39 @@ class CNNPlayer(Player):
     CNN player
 
     """
-
     # def __init__(self, N, seed=None, epsilon=0.2, verbose=False, OI=False):
     def __init__(self, N, verbose=False):
         Player.__init__(self, N)
 
         dir_name='/home/mario/Dropbox/PycharmProjects/ndsgo'
-        self.player_file = {9: os.path.join(dir_name,'model_9x9'),
-                            19: os.path.join(dir_name,'model_19x19')}
+        self.player_file = {9: os.path.join(dir_name,'model_9x9_l13_26000'),
+                            #9: os.path.join(dir_name, 'model_9x9'),
+                            #19: os.path.join(dir_name,'model_19x19_k128')}
+                                19: os.path.join(dir_name, 'model_19x19_l13')}
+                            #19: os.path.join(dir_name,'model_19x19')}
 
         self.verbose = verbose
-
         boardsize = N
 
-        with open(self.player_file[boardsize]+'.prop','r') as f:
-            self.num_channels=int(f.readline().split(',')[1])
+        #with open(self.player_file[boardsize]+'.prop','r') as f:
+            #self.num_channels=int(f.readline().split(',')[1])
 
+        self.num_channels=4
 
         self.data = tf.placeholder(tf.float32, [1, boardsize, boardsize, self.num_channels])
 
-        self.logits = cnn.inference_layer(self.data, boardsize, self.num_channels,4)
+        self.logits = cnn.inference_layer(self.data, boardsize, self.num_channels,11)
+        #self.logits = cnn.inference(self.data, boardsize, self.num_channels)
         self.sm_output = tf.nn.softmax(self.logits)
 
         # init = tf.initialize_all_variables()
+        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5)
+
 
         saver = tf.train.Saver()
         self.sess = tf.Session()
-
+        #self.sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+        #self.sess = tf.Session(config=tf.ConfigProto(log_device_placement=False, gpu_options=gpu_options))
         try:
             file_name = self.player_file[N]
         except:
@@ -83,6 +89,8 @@ class CNNPlayer(Player):
 
         ind_actions = output[0].argsort()[::-1]
 
+        ind_actions_cd=[utils.a2cd(a,boardsize) for a in ind_actions]
+        eprint(ind_actions_cd[:10])
         # play the move
 
         for a in ind_actions:
@@ -132,9 +140,32 @@ def test_not_fill_eyes(N, num_moves=10, verbose=False):
             eprint(player.board)
     eprint(player.board)
 
+def test_kill(N=9):
+    player = CNNPlayer(N)
+    seq=['B D3', 'B D5', 'B C4', 'W D4']
+    player.board.play_seq(seq)
+    eprint(player.board)
+    player.genmove(Color.BLACK)
+    eprint(player.board)
+
+def test_two_eyes(N=9):
+    player = CNNPlayer(N)
+    seq = ['B F9', 'B F8', 'B G7', 'B H6', 'B J6', 'B F7',
+           'W G8', 'W H9', 'W H7', 'W J8', 'W G9']
+    player.board.play_seq(seq)
+    eprint(player.board)
+    player.genmove(Color.WHITE)
+    eprint(player.board)
+
+
 def main():
-    test_player(9, num_moves=50, verbose=True)
+
+    #test_player(9, num_moves=100, verbose=True)
+    test_player(19, num_moves=361, verbose=True)
     #test_not_fill_eyes(19, num_moves=100, verbose=True)
+    #test_kill(9)
+    #test_two_eyes(9)
+
 
 if __name__ == '__main__':
     main()

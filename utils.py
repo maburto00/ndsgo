@@ -29,6 +29,9 @@ def sgfxy2p(s, N):
     return p
 
 
+def a2cd(a, N):
+    return p2cd(a2p(a, N),N)
+
 def a2p(a, N):
     """
     action to position.

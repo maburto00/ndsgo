@@ -1,36 +1,3 @@
-# Copyright 2015 The TensorFlow Authors. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
-
-"""Builds the CIFAR-10 network.
-
-Summary of available functions:
-
- # Compute input images and labels for training. If you would like to run
- # evaluations, use inputs() instead.
- inputs, labels = distorted_inputs()
-
- # Compute inference on the model inputs to make a prediction.
- predictions = inference(inputs)
-
- # Compute the total loss of the prediction with respect to the labels.
- loss = loss(predictions, labels)
-
- # Create a graph to run one step of training with respect to the loss.
- train_op = train(loss, global_step)
-"""
-# pylint: disable=missing-docstring
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -44,36 +11,37 @@ import tarfile
 from six.moves import urllib
 import tensorflow as tf
 
-# from tensorflow.models.image.cifar10 import cifar10_input
 from cnn_models import cnn_input
 
 FLAGS = tf.app.flags.FLAGS
 
 # Basic model parameters.
-tf.app.flags.DEFINE_integer('batch_size', 16,
+tf.app.flags.DEFINE_integer('batch_size', 128,
                             """Number of images to process in a batch.""")
-tf.app.flags.DEFINE_string('data_dir', '/home/mario/datasets/gogod_9x9_games_dataset',
+tf.app.flags.DEFINE_string('data_dir', '/home/mario/datasets/gogod_9x9_dataset',
                            """Path to the data directory.""")
-#tf.app.flags.DEFINE_string('data_dir', 'KGS_10games',
+# tf.app.flags.DEFINE_string('data_dir', 'KGS_10games',
 #                           """Path to the data directory.""")
 
 tf.app.flags.DEFINE_boolean('use_fp16', False,
                             """Train the model using fp16.""")
 
-# Global constants describing the CIFAR-10 data set.
 # TODO: all of this should be defined in FLAGS
-#IMAGE_SIZE = cnn_input.IMAGE_SIZE
-#NUM_CLASSES = cnn_input.NUM_CLASSES
-#NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = cnn_input.NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN
-#NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = cnn_input.NUM_EXAMPLES_PER_EPOCH_FOR_EVAL
-NUM_FILTERS=32
+# IMAGE_SIZE = cnn_input.IMAGE_SIZE
+# NUM_CLASSES = cnn_input.NUM_CLASSES
+# NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = cnn_input.NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN
+# NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = cnn_input.NUM_EXAMPLES_PER_EPOCH_FOR_EVAL
+#NUM_FILTERS = 32
+NUM_FILTERS = 32
 
 # Constants describing the training process.
 MOVING_AVERAGE_DECAY = 0.9999  # The decay to use for the moving average.
-#NUM_EPOCHS_PER_DECAY = 350.0  # Epochs after which learning rate decays.
-DECAY_STEPS=30000
+# NUM_EPOCHS_PER_DECAY = 350.0  # Epochs after which learning rate decays.
+DECAY_STEPS = 500000
 LEARNING_RATE_DECAY_FACTOR = 0.1  # Learning rate decay factor.
-INITIAL_LEARNING_RATE = 0.1  # Initial learning rate.
+#INITIAL_LEARNING_RATE = 0.1  # Initial learning rate.
+INITIAL_LEARNING_RATE = 0.01  # Initial learning rate.
+REGULARIZATION_PARAMETER = 5e-4
 
 # If a model is trained with multiple GPUs, prefix all Op names with tower_name
 # to differentiate the operations. Note that this prefix is removed from the
@@ -143,8 +111,8 @@ def _variable_with_weight_decay(name, shape, stddev, wd):
     return var
 
 
-def distorted_inputs(num_train_files,train_num_examples,boardsize,num_channels):
-    """Construct distorted input for CIFAR training using the Reader ops.
+def distorted_inputs(num_train_files, train_num_examples, boardsize, num_channels):
+    """Construct distorted input for training using the Reader ops.
 
     Returns:
       images: Images. 4D tensor of [batch_size, IMAGE_SIZE, IMAGE_SIZE, 3] size.
@@ -168,8 +136,8 @@ def distorted_inputs(num_train_files,train_num_examples,boardsize,num_channels):
     return images, labels
 
 
-def inputs(eval_data,num_train_files,train_num_examples,test_num_examples, boardsize,num_channels):
-    """Construct input for CIFAR evaluation using the Reader ops.
+def inputs(eval_data, num_train_files, train_num_examples, test_num_examples, boardsize, num_channels):
+    """Construct input for evaluation using the Reader ops.
 
     Args:
       eval_data: bool, indicating if one should use the train or eval data set.
@@ -197,7 +165,7 @@ def inputs(eval_data,num_train_files,train_num_examples,test_num_examples, board
         labels = tf.cast(labels, tf.float16)
     return images, labels
 
-def inference_layer(images,boardsize,num_channels,intermediate_layers=1):
+def inference_layer(images, boardsize, num_channels, intermediate_layers=1):
     """Build the model.
 
     Args:
@@ -216,20 +184,20 @@ def inference_layer(images,boardsize,num_channels,intermediate_layers=1):
         kernel = _variable_with_weight_decay('weights',
                                              shape=[5, 5, num_channels, NUM_FILTERS],
                                              stddev=0.1,
-                                             wd=0.0)
+                                             wd=REGULARIZATION_PARAMETER)
         conv = tf.nn.conv2d(images, kernel, [1, 1, 1, 1], padding='SAME')
         biases = _variable_on_cpu('biases', [NUM_FILTERS], tf.constant_initializer(0.0))
         bias = tf.nn.bias_add(conv, biases)
-        conv_relu= tf.nn.relu(bias, name=scope.name)
+        conv_relu = tf.nn.relu(bias, name=scope.name)
         _activation_summary(conv_relu)
 
-    #conv_relu=conv1
+    # conv_relu=conv1
     for i in range(intermediate_layers):
-        with tf.variable_scope('conv{}'.format(i+2)) as scope:
+        with tf.variable_scope('conv{}'.format(i + 2)) as scope:
             kernel = _variable_with_weight_decay('weights',
                                                  shape=[3, 3, NUM_FILTERS, NUM_FILTERS],
                                                  stddev=0.1,
-                                                 wd=0.0)
+                                                 wd=REGULARIZATION_PARAMETER)
             conv = tf.nn.conv2d(conv_relu, kernel, [1, 1, 1, 1], padding='SAME')
             biases = _variable_on_cpu('biases', [NUM_FILTERS], tf.constant_initializer(0.0))
             bias = tf.nn.bias_add(conv, biases)
@@ -238,31 +206,32 @@ def inference_layer(images,boardsize,num_channels,intermediate_layers=1):
 
     # conv2
     # softmax, i.e. softmax(WX + b)
-    with tf.variable_scope('conv_last') as scope:
+    with tf.variable_scope('conv{}'.format(intermediate_layers+2)) as scope:
         kernel = _variable_with_weight_decay('weights',
                                              shape=[1, 1, NUM_FILTERS, 1],
                                              stddev=0.1,
-                                             wd=0.0)
+                                             wd=REGULARIZATION_PARAMETER)
         conv = tf.nn.conv2d(conv_relu, kernel, [1, 1, 1, 1], padding='SAME')
         conv_shape = conv.get_shape().as_list()
-        reshape = tf.reshape(conv,[conv_shape[0], conv_shape[1] * conv_shape[2] * conv_shape[3]])
+        reshape = tf.reshape(conv, [conv_shape[0], conv_shape[1] * conv_shape[2] * conv_shape[3]])
 
-        biases = _variable_on_cpu('biases', [boardsize*boardsize],
+        biases = _variable_on_cpu('biases', [boardsize * boardsize],
                                   tf.constant_initializer(0.1))
 
-        logits= tf.nn.relu(reshape + biases ,name=scope.name)
+        logits = tf.nn.relu(reshape + biases, name=scope.name)
 
 
-        #reshape = tf.reshape(conv2, [FLAGS.batch_size,-1])
-        #weights = _variable_with_weight_decay('weights', [192, boardsize*boardsize],
+        # reshape = tf.reshape(conv2, [FLAGS.batch_size,-1])
+        # weights = _variable_with_weight_decay('weights', [192, boardsize*boardsize],
         #                                      stddev=1 / 192.0, wd=0.0)
-        #biases = _variable_on_cpu('biases', [boardsize*boardsize],
+        # biases = _variable_on_cpu('biases', [boardsize*boardsize],
         #                          tf.constant_initializer(0.0))
-        #_activation_summary(softmax_linear)
+        # _activation_summary(softmax_linear)
 
     return logits
 
-def inference_l2(images,boardsize,num_channels):
+
+def inference_l2(images, boardsize, num_channels):
     """Build the model.
 
     Args:
@@ -281,7 +250,7 @@ def inference_l2(images,boardsize,num_channels):
         kernel = _variable_with_weight_decay('weights',
                                              shape=[5, 5, num_channels, NUM_FILTERS],
                                              stddev=0.1,
-                                             wd=0.0)
+                                             wd=REGULARIZATION_PARAMETER)
         conv = tf.nn.conv2d(images, kernel, [1, 1, 1, 1], padding='SAME')
         biases = _variable_on_cpu('biases', [NUM_FILTERS], tf.constant_initializer(0.0))
         bias = tf.nn.bias_add(conv, biases)
@@ -292,7 +261,7 @@ def inference_l2(images,boardsize,num_channels):
         kernel = _variable_with_weight_decay('weights',
                                              shape=[3, 3, NUM_FILTERS, NUM_FILTERS],
                                              stddev=0.1,
-                                             wd=0.0)
+                                             wd=REGULARIZATION_PARAMETER)
         conv = tf.nn.conv2d(conv1, kernel, [1, 1, 1, 1], padding='SAME')
         biases = _variable_on_cpu('biases', [NUM_FILTERS], tf.constant_initializer(0.0))
         bias = tf.nn.bias_add(conv, biases)
@@ -305,28 +274,28 @@ def inference_l2(images,boardsize,num_channels):
         kernel = _variable_with_weight_decay('weights',
                                              shape=[1, 1, NUM_FILTERS, 1],
                                              stddev=0.1,
-                                             wd=0.0)
+                                             wd=REGULARIZATION_PARAMETER)
         conv = tf.nn.conv2d(conv2, kernel, [1, 1, 1, 1], padding='SAME')
         conv_shape = conv.get_shape().as_list()
-        reshape = tf.reshape(conv,[conv_shape[0], conv_shape[1] * conv_shape[2] * conv_shape[3]])
+        reshape = tf.reshape(conv, [conv_shape[0], conv_shape[1] * conv_shape[2] * conv_shape[3]])
 
-        biases = _variable_on_cpu('biases', [boardsize*boardsize],
+        biases = _variable_on_cpu('biases', [boardsize * boardsize],
                                   tf.constant_initializer(0.1))
 
-        logits= tf.nn.relu(reshape + biases ,name=scope.name)
+        logits = tf.nn.relu(reshape + biases, name=scope.name)
 
 
-        #reshape = tf.reshape(conv2, [FLAGS.batch_size,-1])
-        #weights = _variable_with_weight_decay('weights', [192, boardsize*boardsize],
+        # reshape = tf.reshape(conv2, [FLAGS.batch_size,-1])
+        # weights = _variable_with_weight_decay('weights', [192, boardsize*boardsize],
         #                                      stddev=1 / 192.0, wd=0.0)
-        #biases = _variable_on_cpu('biases', [boardsize*boardsize],
+        # biases = _variable_on_cpu('biases', [boardsize*boardsize],
         #                          tf.constant_initializer(0.0))
-        #_activation_summary(softmax_linear)
+        # _activation_summary(softmax_linear)
 
     return logits
 
 
-def inference(images,boardsize,num_channels):
+def inference(images, boardsize, num_channels):
     """Build the model.
 
     Args:
@@ -345,19 +314,19 @@ def inference(images,boardsize,num_channels):
         kernel = _variable_with_weight_decay('weights',
                                              shape=[5, 5, num_channels, 32],
                                              stddev=0.1,
-                                             wd=0.0)
+                                             wd=REGULARIZATION_PARAMETER)
         conv = tf.nn.conv2d(images, kernel, [1, 1, 1, 1], padding='SAME')
         biases = _variable_on_cpu('biases', [32], tf.constant_initializer(0.0))
         bias = tf.nn.bias_add(conv, biases)
         conv1 = tf.nn.relu(bias, name=scope.name)
         _activation_summary(conv1)
 
-    # pool1
-    #pool1 = tf.nn.max_pool(conv1, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1],
-     #                      padding='SAME', name='pool1')
-    # norm1
-    #norm1 = tf.nn.lrn(pool1, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75,
-#                      name='norm1')
+        # pool1
+        # pool1 = tf.nn.max_pool(conv1, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1],
+        #                      padding='SAME', name='pool1')
+        # norm1
+        # norm1 = tf.nn.lrn(pool1, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75,
+    #                      name='norm1')
 
     # conv2
     # softmax, i.e. softmax(WX + b)
@@ -365,23 +334,23 @@ def inference(images,boardsize,num_channels):
         kernel = _variable_with_weight_decay('weights',
                                              shape=[1, 1, 32, 1],
                                              stddev=0.1,
-                                             wd=0.0)
+                                             wd=REGULARIZATION_PARAMETER)
         conv = tf.nn.conv2d(conv1, kernel, [1, 1, 1, 1], padding='SAME')
         conv_shape = conv.get_shape().as_list()
-        reshape = tf.reshape(conv,[conv_shape[0], conv_shape[1] * conv_shape[2] * conv_shape[3]])
+        reshape = tf.reshape(conv, [conv_shape[0], conv_shape[1] * conv_shape[2] * conv_shape[3]])
 
-        biases = _variable_on_cpu('biases', [boardsize*boardsize],
+        biases = _variable_on_cpu('biases', [boardsize * boardsize],
                                   tf.constant_initializer(0.1))
 
-        logits= tf.nn.relu(reshape + biases ,name=scope.name)
+        logits = tf.nn.relu(reshape + biases, name=scope.name)
 
 
-        #reshape = tf.reshape(conv2, [FLAGS.batch_size,-1])
-        #weights = _variable_with_weight_decay('weights', [192, boardsize*boardsize],
+        # reshape = tf.reshape(conv2, [FLAGS.batch_size,-1])
+        # weights = _variable_with_weight_decay('weights', [192, boardsize*boardsize],
         #                                      stddev=1 / 192.0, wd=0.0)
-        #biases = _variable_on_cpu('biases', [boardsize*boardsize],
+        # biases = _variable_on_cpu('biases', [boardsize*boardsize],
         #                          tf.constant_initializer(0.0))
-        #_activation_summary(softmax_linear)
+        # _activation_summary(softmax_linear)
 
     return logits
 
@@ -412,7 +381,7 @@ def loss(logits, labels):
 
 
 def _add_loss_summaries(total_loss):
-    """Add summaries for losses in CIFAR-10 model.
+    """Add summaries for losses in the model.
 
     Generates moving average for all losses and associated summaries for
     visualizing the performance of the network.
@@ -438,8 +407,8 @@ def _add_loss_summaries(total_loss):
     return loss_averages_op
 
 
-def train(total_loss, global_step,train_num_examples):
-    """Train CIFAR-10 model.
+def train(total_loss, global_step, train_num_examples):
+    """Train model.
 
     Create an optimizer and apply to all trainable variables. Add moving
     average for all trainable variables.
@@ -452,9 +421,9 @@ def train(total_loss, global_step,train_num_examples):
       train_op: op for training.
     """
     # Variables that affect learning rate.
-    #num_batches_per_epoch = train_num_examples / FLAGS.batch_size
-    #decay_steps = int(num_batches_per_epoch * NUM_EPOCHS_PER_DECAY)
-    decay_steps=DECAY_STEPS
+    # num_batches_per_epoch = train_num_examples / FLAGS.batch_size
+    # decay_steps = int(num_batches_per_epoch * NUM_EPOCHS_PER_DECAY)
+    decay_steps = DECAY_STEPS
 
     # Decay the learning rate exponentially based on the number of steps.
     lr = tf.train.exponential_decay(INITIAL_LEARNING_RATE,
@@ -494,20 +463,20 @@ def train(total_loss, global_step,train_num_examples):
 
     return train_op
 
-def read_properties_file():
 
+def read_properties_file():
     for fn in os.listdir(FLAGS.data_dir):
         if fn.endswith('.prop'):
-            property_fn=fn
+            property_fn = fn
             break
 
-    with open(os.path.join(FLAGS.data_dir,property_fn),'r') as f:
-        num_examples=[int(c) for c in f.readline().strip().split(',')]
-        num_train_files=len(num_examples)-1
-        train_num_examples=sum(num_examples[:-1])
-        test_num_examples=int(num_examples[-1])
-        num_channels=int(f.readline().strip())
-        boardsize=int(f.readline().strip())
+    with open(os.path.join(FLAGS.data_dir, property_fn), 'r') as f:
+        num_examples = [int(c) for c in f.readline().strip().split(',')]
+        num_train_files = len(num_examples) - 1
+        train_num_examples = sum(num_examples[:-1])
+        test_num_examples = int(num_examples[-1])
+        num_channels = int(f.readline().strip())
+        boardsize = int(f.readline().strip())
 
-        print(num_examples,train_num_examples,test_num_examples,num_channels,boardsize)
-    return num_train_files,train_num_examples,test_num_examples,num_channels,boardsize
+        print(num_examples, train_num_examples, test_num_examples, num_channels, boardsize)
+    return num_train_files, train_num_examples, test_num_examples, num_channels, boardsize

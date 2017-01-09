@@ -1,6 +1,7 @@
 import time
 import matplotlib.pyplot as plt
 import numpy as np
+import os.path
 
 from player import Player
 from utils import eprint, Color, a2p, p2cd
@@ -35,8 +36,10 @@ class MCPlayerQ(Player):
     def __init__(self, N, seed=None, epsilon=0.2, verbose=False, OI=False):
         Player.__init__(self, N)
 
-        self.player_file = {2:'MC_Q_EG_OI_N2_G1000000_seed2_epsilon50_time744.npy',
-                            3:'MC_Q_EG_OI_N3_G100000_seed2_epsilon50_time315.npy'}
+        dir_name = '/home/mario/Dropbox/PycharmProjects/ndsgo/saved_param'
+        self.player_file = {2: os.path.join(dir_name,'MC_Q_EG_OI_N2_G1000000_seed2_epsilon50_time744.npy'),
+                            3:os.path.join(dir_name,'MC_Q_EG_OI_N3_G100000_seed2_epsilon50_time315.npy')}
+                            #3: 'saved_param/MC_Q_EG_OI_N3_G100000_seed2_epsilon50_time388.npy'}
 
         # optimistic initialization
         self.OI = OI
@@ -313,15 +316,15 @@ def train_mcplayer(N=2, num_games=1000000, seed=None, epsilon=0.2, verbose=False
     mcPlayer.plot_QH()
 
 
-def play_5_moves():
-    mcPlayer = MCPlayerQ(2)
-    mcPlayer.load_Q('Q_n2_N10K.npy')
-    mcPlayer.automatch(6)
+def play_n_moves(N=2,steps=5,verbose=True):
+    mcPlayer = MCPlayerQ(N,verbose=verbose,epsilon=0)
+    mcPlayer.load_Q(mcPlayer.player_file[N])
+    mcPlayer.automatch(steps)
 
 
 def play_moves_3x3(steps=5):
     mcPlayer = MCPlayerQ(3)
-    mcPlayer.load_Q('MC_Q_N3_G1000000_seed2.npy')
+    mcPlayer.load_Q('saved_param/MC_Q_N3_G1000000_seed2.npy')
     mcPlayer.automatch(steps)
 
 
@@ -430,8 +433,12 @@ def print_random_values():
 
 def test_get_state():
     mcPlayer = MCPlayerQ(2)
-    print(mcPlayer._get_state(mcPlayer.board))
-    print(mcPlayer.board)
+    eprint(mcPlayer._get_state(mcPlayer.board))
+    eprint(mcPlayer.board)
+    pass
+
+def test_q():
+    mcPlayer = MCPlayerQ(2)
     pass
 
 
@@ -443,16 +450,19 @@ if __name__ == '__main__':
 
     #train_mcplayer(2, 10, seed=2, epsilon=0.8, verbose=True)
 
-    # for i in [10 ** 2, 10 ** 3, 10 ** 4, 10 ** 5, 10 ** 6]:
-    for i in [10 ** 7]:
-        train_mcplayer(3, i, seed=2, epsilon=0.5,verbose=False,OI=True)
+#    for i in [10 ** 2, 10 ** 3, 10 ** 4, 10 ** 5, 10 ** 6]:
+#        train_mcplayer(2, i, seed=2, epsilon=0.5, verbose=False, OI=False)
+    #for i in [10 ** 7]:
+
+    #test_q()
+
 
     # t0 = time.time()
     # train_mcplayer(3, 10 ** 7)
     # eprint('time to train:{}'.format(time.time() - t0))
 
 
-    # play_5_moves()
+    play_n_moves(3,10)
     # test_get_state()
     # play_moves_3x3(20)
     # train_3x3_mcplayer()

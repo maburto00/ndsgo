@@ -1,20 +1,3 @@
-# Copyright 2015 The TensorFlow Authors. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
-
-"""Routine for decoding the CIFAR-10 binary file format."""
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -24,15 +7,11 @@ import os
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
-
-# Process images of this size. Note that this differs from the original CIFAR
-# image size of 32 x 32. If one alters this number, then the entire model
-# architecture will change and any model would need to be retrained.
 # IMAGE_SIZE = 24
 # IMAGE_SIZE = 9
 # NUM_CHANNELS = 4
 
-# Global constants describing the CIFAR-10 data set.
+# Global constants describing the data set.
 # NUM_CLASSES = IMAGE_SIZE*IMAGE_SIZE
 
 # NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 50000
@@ -40,46 +19,22 @@ import tensorflow as tf
 
 
 def read_data(filename_queue, boardsize, num_channels):
-    """Reads and parses examples from CIFAR10 data files.
-
-    Recommendation: if you want N-way read parallelism, call this function
-    N times.  This will give you N independent Readers reading different
-    files & positions within those files, which will give better mixing of
-    examples.
-
-    Args:
-      filename_queue: A queue of strings with the filenames to read from.
-
-    Returns:
-      An object representing a single example, with the following fields:
-        height: number of rows in the result (32)
-        width: number of columns in the result (32)
-        depth: number of color channels in the result (3)
-        key: a scalar string Tensor describing the filename & record number
-          for this example.
-        label: an int32 Tensor with the label in the range 0..9.
-        uint8image: a [height, width, depth] uint8 Tensor with the image data
-    """
 
     class Record(object):
         pass
 
     result = Record()
 
-    # Dimensions of the images in the CIFAR-10 dataset.
-    # See http://www.cs.toronto.edu/~kriz/cifar.html for a description of the
-    # input format.
-    label_bytes = 2  # 2 for CIFAR-100
+    label_bytes = 2
     result.height = boardsize
     result.width = boardsize
     result.depth = num_channels
     image_bytes = result.height * result.width * result.depth
-    # Every record consists of a label followed by the image, with a
-    # fixed number of bytes for each.
+
     record_bytes = label_bytes + image_bytes
 
     # Read a record, getting filenames from the filename_queue.  No
-    # header or footer in the CIFAR-10 format, so we leave header_bytes
+    # header or footer in the format, so we leave header_bytes
     # and footer_bytes at their default of 0.
     reader = tf.FixedLengthRecordReader(record_bytes=record_bytes)
     result.key, value = reader.read(filename_queue)
@@ -143,10 +98,10 @@ def _generate_image_and_label_batch(image, label, min_queue_examples,
 
 
 def distorted_inputs(data_dir, batch_size, num_train_files, train_num_examples, boardsize, num_channels):
-    """Construct distorted input for CIFAR training using the Reader ops.
+    """Construct distorted input for training using the Reader ops.
 
     Args:
-      data_dir: Path to the CIFAR-10 data directory.
+      data_dir: Path to the data directory.
       batch_size: Number of images per batch.
 
     Returns:
@@ -182,9 +137,9 @@ def distorted_inputs(data_dir, batch_size, num_train_files, train_num_examples, 
 
     # Ensure that the random shuffling has good mixing properties.
     min_fraction_of_examples_in_queue = 0.4
-    #min_queue_examples = int(min(train_num_examples *
-    #                             min_fraction_of_examples_in_queue, 20000))
-    min_queue_examples=64
+    min_queue_examples = int(min(train_num_examples *
+                                 min_fraction_of_examples_in_queue, 20000))
+    #min_queue_examples=64
     print('Filling queue with %d images before starting to train. '
           'This will take a few minutes.' % min_queue_examples)
 
@@ -196,11 +151,11 @@ def distorted_inputs(data_dir, batch_size, num_train_files, train_num_examples, 
 
 def inputs(eval_data, data_dir, batch_size, num_train_files, train_num_examples, test_num_examples, boardsize,
            num_channels):
-    """Construct input for CIFAR evaluation using the Reader ops.
+    """Construct input for evaluation using the Reader ops.
 
     Args:
       eval_data: bool, indicating if one should use the train or eval data set.
-      data_dir: Path to the CIFAR-10 data directory.
+      data_dir: Path to the data directory.
       batch_size: Number of images per batch.
 
     Returns:
@@ -239,13 +194,7 @@ def inputs(eval_data, data_dir, batch_size, num_train_files, train_num_examples,
     height = boardsize
     width = boardsize
 
-    # Image processing for evaluation.
-    # Crop the central [height, width] of the image.
-    # resized_image = tf.image.resize_image_with_crop_or_pad(reshaped_image,width, height)
     float_image = tf.cast(tf.reshape(reshaped_image, [height, width, num_channels]), tf.float32)
-
-    # Subtract off the mean and divide by the variance of the pixels.
-    # float_image = tf.image.per_image_whitening(resized_image)
 
     # Ensure that the random shuffling has good mixing properties.
     min_fraction_of_examples_in_queue = 0.4

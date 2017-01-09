@@ -1,37 +1,3 @@
-# Copyright 2015 The TensorFlow Authors. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
-
-"""A binary to train CIFAR-10 using a single GPU.
-
-Accuracy:
-cnn_train.py achieves ~86% accuracy after 100K steps (256 epochs of
-data) as judged by cnn_eval.py.
-
-Speed: With batch_size 128.
-
-System        | Step Time (sec/batch)  |     Accuracy
-------------------------------------------------------------------
-1 Tesla K20m  | 0.35-0.60              | ~86% at 60K steps  (5 hours)
-1 Tesla K40m  | 0.25-0.35              | ~86% at 100K steps (4 hours)
-
-Usage:
-Please see the tutorial and website for how to download the CIFAR-10
-data set, compile the program and train the model.
-
-http://tensorflow.org/tutorials/deep_cnn/
-"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -46,12 +12,11 @@ import numpy as np
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
-# from tensorflow.models.image.cifar10 import cifar10
 from cnn_models import cnn
 
 FLAGS = tf.app.flags.FLAGS
 
-tf.app.flags.DEFINE_string('train_dir', 'gogod_9x9_train',
+tf.app.flags.DEFINE_string('train_dir', 'gogod_train_l2_new',
                            """Directory where to write event logs """
                            """and checkpoint.""")
 tf.app.flags.DEFINE_integer('max_steps', 1000010,
@@ -59,13 +24,12 @@ tf.app.flags.DEFINE_integer('max_steps', 1000010,
 tf.app.flags.DEFINE_boolean('log_device_placement', False,
                             """Whether to log device placement.""")
 
-
 def train():
-    """Train CIFAR-10 for a number of steps."""
+    """Train for a number of steps."""
     with tf.Graph().as_default():
         global_step = tf.Variable(0, trainable=False)
 
-        # Get images and labels for CIFAR-10.
+        # Get images and labels
         images, labels = cnn.distorted_inputs(num_train_files,train_num_examples,
                                                      boardsize,
                                                      num_channels)
@@ -73,8 +37,9 @@ def train():
         # Build a Graph that computes the logits predictions from the
         # inference model.
         #logits = cnn.inference_l2(images, boardsize, num_channels)
-        #logits = cnn.inference_layer(images, boardsize, num_channels,4)
-        logits=cnn.inference(images,boardsize,num_channels)
+        #13->11, 3->1,2->0
+        logits = cnn.inference_layer(images, boardsize, num_channels,0)
+        #logits=cnn.inference(images,boardsize,num_channels)
 
         # Calculate loss.
         loss = cnn.loss(logits, labels)
@@ -84,7 +49,7 @@ def train():
         train_op = cnn.train(loss, global_step, train_num_examples)
 
         # Create a saver.
-        saver = tf.train.Saver(tf.all_variables())
+        saver = tf.train.Saver(tf.all_variables(),max_to_keep=50)
 
         saver_exp= tf.train.Saver(tf.all_variables())
 
@@ -94,9 +59,11 @@ def train():
         # Build an initialization operation to run below.
         init = tf.initialize_all_variables()
 
+        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5)
+
         # Start running operations on the Graph.
         sess = tf.Session(config=tf.ConfigProto(
-            log_device_placement=FLAGS.log_device_placement))
+            log_device_placement=FLAGS.log_device_placement,gpu_options=gpu_options))
         sess.run(init)
 
         stored_performace=[]

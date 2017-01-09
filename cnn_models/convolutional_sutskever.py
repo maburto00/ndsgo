@@ -1,24 +1,3 @@
-# Copyright 2015 The TensorFlow Authors. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
-
-"""Simple, end-to-end, LeNet-5-like convolutional MNIST model example.
-
-This should achieve a test error of 0.7%. Please keep this model as simple and
-linear as possible, it is meant as a tutorial for simple convolutional models.
-Run with --self_test on the command line to execute a short self-test.
-"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -87,8 +66,6 @@ def extract_data(filename):
 
 
         # data = (data - (PIXEL_DEPTH / 2.0)) / PIXEL_DEPTH
-
-        # TODO: verify that the order is correct. See next example taken from cifar10_input
         # Convert from [depth, height, width] to [height, width, depth].
         # result.uint8image = tf.transpose(depth_major, [1, 2, 0])
 
@@ -237,10 +214,10 @@ def main(argv=None):  # pylint: disable=unused-argument
         logits, train_labels_node))
 
     # L2 regularization for the fully connected parameters.
-    #regularizers = (tf.nn.l2_loss(fc1_weights) + tf.nn.l2_loss(fc1_biases) +
+    regularizers = (tf.nn.l2_loss(fc1_weights) + tf.nn.l2_loss(fc1_biases) +
      #               tf.nn.l2_loss(fc2_weights) + tf.nn.l2_loss(fc2_biases))
-    # Add the regularization term to the loss.
-    #loss += 5e-4 * regularizers
+     Add the regularization term to the loss.
+    loss += 5e-4 * regularizers
 
     # Optimizer: set up a variable that's incremented once per batch and
     # controls the learning rate decay.
