@@ -1,29 +1,13 @@
 # README #
 
-This README would normally document whatever steps are necessary to get your application up and running.
+This computer go program was developed in an attempt to reach the state of the art computer go program AlphaGo. Although this objective seems almost impossible, the idea is to get a competitive computer go program. 
 
-### What is this repository for? ###
+This version still needs some work since we only developed the first part: the supervised learning approach.
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+### Elements ###
+* Computer player for 2x2 and 3x3 using basic RL techniques.
+* Computer player for 9x9 and 19x19 using Supervised Learning.
 
-### How do I get set up? ###
+### Required files ###
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
-
-### Contribution guidelines ###
-
-* Writing tests
-* Code review
-* Other guidelines
-
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
+To be able to generate new parameters by training for the supervised learning approach, a dataset is needed. The most used datasets are the KGS dataset and the GoGoD dataset. That datasets should be downloaded separately from their respective sites.
